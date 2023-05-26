@@ -1,0 +1,11 @@
+# Emacs-created backup files
+*~
+
+# PDFs
+*.pdf
+
+# Any subdirectory called old/
+old/
+
+# Out-files created by Slurm
+*.out
