@@ -22,3 +22,4 @@ debug/
 # Even locally, they should not be tracked by git because they're essentially ephemeral: specific to
 # a particular simulation and random seed.
 *.RData
+/test/
