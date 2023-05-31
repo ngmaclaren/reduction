@@ -50,7 +50,7 @@ gt <- rowMeans(fullstate[[model]]) # mean state
 soln <- experiment(n, gt, GT, bp)
 vs <- soln$vs
 
-ntrials <- 30
+ntrials <- 100
 errors.ref <- unlist(
         mclapply(seq(ntrials), function(x) experiment(n, gt, GT, bp)$error, mc.cores = ncores)
 )
@@ -74,10 +74,13 @@ ehat.alt2 <- obj_fn(
 lims <- c(0.025, 0.975)
 quantile(errors.ref, probs = lims)
 ehat.ref
+with(list(e = ehat.ref, x = errors.ref), (e - mean(x))/sd(x))
 quantile(errors.alt1, probs = lims)
 ehat.alt1
+with(list(e = ehat.alt1, x = errors.alt1), (e - mean(x))/sd(x))
 quantile(errors.alt2, probs = lims)
 ehat.alt2
+with(list(e = ehat.alt2, x = errors.alt2), (e - mean(x))/sd(x))
 
 ## plotthis <- function(vs, y, Y, bp, legend = FALSE) {
 ##     palette("Paired")
