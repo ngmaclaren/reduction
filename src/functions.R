@@ -219,7 +219,7 @@ quadoptm <- function(vs, y, Y) {
     return(solution(qpsol))
 }
 
-reduction.sample <- function(vs, y, Y, Ds, angle = FALSE, optimize_weights = TRUE) {
+reduction.sample <- function(vs, y, Y, Ds, angle = FALSE, optimize_weights = FALSE) {
     Z <- as.matrix(take_sample(vs, Y))
     if(optimize_weights) {
         w <- quadoptm(vs, y, Y)
