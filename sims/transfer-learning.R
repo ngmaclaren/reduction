@@ -95,6 +95,12 @@ comps <- list(
     )
 )
 
+rand <- list(
+    orig = make_dataset(n, ntrials^2, bp, gt, GT),
+    low = make_dataset(n, ntrials^2, bp, a1, A1),
+    high = make_dataset(n, ntrials^2, bp, a2, A2)
+)
+
 soln_errors <- list(
     orig = sapply(solns$orig, `[[`, "error"),
     low = sapply(solns$orig, function(soln) obj_fn(soln$vs, a1, A1, bp)),
@@ -104,5 +110,7 @@ soln_errors <- list(
 comp_errors <- lapply(comps, function(complist) {
     do.call(cbind, lapply(complist, function(comp) sapply(comp, `[[`, "error")))
 })
+
+rand_errors <- lapply(rand, function(comp) sapply(comp, `[[`, "error"))
 
 save.image(outputfile)
