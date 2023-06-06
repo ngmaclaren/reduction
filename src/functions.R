@@ -243,7 +243,7 @@ update_vs <- function(vs, y, Y, Ds, angle, optimize_weights) {
 
 experiment <- function(n, y, Y, Ds, maxit = NULL, angle = FALSE,
                        optimize_weights = FALSE, trace = FALSE) {
-    print(Sys.getpid())
+    ##print(Sys.getpid())
 
     if(is.null(maxit)) {
         maxit <- switch(

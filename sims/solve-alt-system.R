@@ -38,45 +38,45 @@ sis2 <- with(
 print("solving gene regulatory...")
 gr1 <- with(
     genereg_parms,
-    solve_genereg(x = rep(x.init, N), B = .5*B, f = f, h = h, Ds = Ds, A = A)
+    solve_genereg(x = rep(x.init, N), B = B, f = .5*f, h = h, Ds = Ds, A = A)
 )
 gr2 <- with(
     genereg_parms,
-    solve_genereg(x = rep(x.init, N), B = 2*B, f = f, h = h, Ds = Ds, A = A)
+    solve_genereg(x = rep(x.init, N), B = B, f = 2*f, h = h, Ds = Ds, A = A)
 )
 
 print("solving mutualistic species...")
 ms1 <- with(
     mutualistic_parms,
-    solve_mutualistic(x = rep(x.init, N), B = B, K = .5*K, Cs = Cs, D = D, E = E, H = H, A = A)
+    solve_mutualistic(x = rep(x.init, N), B = B, K = 3, Cs = Cs, D = D, E = E, H = H, A = A) # .5*K
 )
 ms2 <- with(
     mutualistic_parms,
-    solve_mutualistic(x = rep(x.init, N), B = B, K = 2*K, Cs = Cs, D = D, E = E, H = H, A = A)
+    solve_mutualistic(x = rep(x.init, N), B = B, K = 7, Cs = Cs, D = D, E = E, H = H, A = A) # 2*K
 )
 
-print("solving Wilson-Cowan...")
-wc1 <- with(
-    wilsoncowan_parms, {
-        wilsoncowan_parms$c1 <- wilsoncowan_parms$c1/2
-        wilsoncowan_parms$c3 <- wilsoncowan_parms$c3/2
-        solve_wilsoncowan(E = rep(E.init, N), I = rep(I.init, N), c5s = c5s, A = A, N = N)
-    }
-)
-wc2 <- with(
-    wilsoncowan_parms, {
-        wilsoncowan_parms$c2 <- wilsoncowan_parms$c2/2
-        wilsoncowan_parms$c4 <- wilsoncowan_parms$c4/2
-        solve_wilsoncowan(E = rep(E.init, N), I = rep(I.init, N), c5s = c5s, A = A, N = N)
-    }
-)
+## print("solving Wilson-Cowan...")
+## wc1 <- with(
+##     wilsoncowan_parms, {
+##         wilsoncowan_parms$c1 <- wilsoncowan_parms$c1/2
+##         wilsoncowan_parms$c3 <- wilsoncowan_parms$c3/2
+##         solve_wilsoncowan(E = rep(E.init, N), I = rep(I.init, N), c5s = c5s, A = A, N = N)
+##     }
+## )
+## wc2 <- with(
+##     wilsoncowan_parms, {
+##         wilsoncowan_parms$c2 <- wilsoncowan_parms$c2/2
+##         wilsoncowan_parms$c4 <- wilsoncowan_parms$c4/2
+##         solve_wilsoncowan(E = rep(E.init, N), I = rep(I.init, N), c5s = c5s, A = A, N = N)
+##     }
+## )
 
 fullstate_alt <- list(
     dw1 = dw1, dw2 = dw2,
     sis1 = sis1, sis2 = sis2,
     gr1 = gr1, gr2 = gr2,
-    ms1 = ms1, ms2 = ms2,
-    wc1 = wc1, wc2 = wc2
+    ms1 = ms1, ms2 = ms2#,
+    ##wc1 = wc1, wc2 = wc2
 )
 
 attr(fullstate_alt, "graph") <- g
