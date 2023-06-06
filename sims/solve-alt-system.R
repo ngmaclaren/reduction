@@ -38,11 +38,11 @@ sis2 <- with(
 print("solving gene regulatory...")
 gr1 <- with(
     genereg_parms,
-    solve_genereg(x = rep(x.init, N), B = B, f = .5*f, h = h, Ds = Ds, A = A)
+    solve_genereg(x = rep(x.init, N), B = B, f = 2*f, h = h, Ds = Ds, A = A) # .5*f involves neg
 )
 gr2 <- with(
     genereg_parms,
-    solve_genereg(x = rep(x.init, N), B = B, f = 2*f, h = h, Ds = Ds, A = A)
+    solve_genereg(x = rep(x.init, N), B = B, f = f, h = 2*h, Ds = Ds, A = A)
 )
 
 print("solving mutualistic species...")

@@ -85,10 +85,10 @@ solve_mutualistic <- function(x, B, K, Cs, D, E, H, A, times = 0:15) {
 }
 
 mutualistic_parms <- list(
-    x.init = .01,
+    x.init = 0.001,
     B = 0.1,
     K = 5, # 5
-    Cs = seq(2, 0.1, length.out = lout),
+    Cs = seq(0.1, 2, length.out = lout),
     D = 10,
     E = 0.9,
     H = 0.1,
@@ -120,11 +120,11 @@ solve_genereg <- function(x, B, f, h, Ds, A, times = 0:15) {
 }
 
 genereg_parms <- list(
-    x.init = 1,
+    x.init = 2,
     B = 1,
     f = 1,
     h = 2,
-    Ds = seq(1, 0.001, length.out = lout)
+    Ds = seq(0.001, 1, length.out = lout)
 )
 
 ### Double-well
