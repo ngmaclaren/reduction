@@ -44,8 +44,8 @@ bp <- switch(
     dynamics,
     dw = seq(0.001, 1, length.out = lout),
     SIS = seq(0.001, 1, length.out = lout),
-    genereg = seq(1, 0.001, length.out = lout),
-    mutualistic = seq(2, 0.1, length.out = lout)
+    genereg = seq(0.001, 1, length.out = lout),
+    mutualistic = seq(0.1, 2, length.out = lout)
 )
 alt1 <- switch(
     dynamics,
