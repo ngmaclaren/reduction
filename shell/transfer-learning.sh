@@ -21,6 +21,6 @@ declare -a dynamics=("dw" "SIS" "genereg" "mutualistic")
 
 for i in "${networks[@]}"; do
     for j in "${dynamics[@]}"; do
-	Rscript ../sims/transfer-learning.R --network=$i --dynamics=$j --ntrials=100
+	Rscript ../sims/transfer-learning.R --network=$i --dynamics=$j --ntrials=25
     done
 done

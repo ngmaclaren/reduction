@@ -7,10 +7,6 @@ optionlist <- list(
     make_option(
         c("-d", "--dynamics"), type = "character", default = "dw",
         help = "The dynamics to simulate on each network. Default is %default. Options: 'dw', 'SIS', 'genereg', and 'mutualistic'."
-    ),
-    make_option(
-        c("-n", "--ntrials"), type = "integer", default = 3,
-        help = "The number of independent simulations on each network [default %default]. To be more efficient, set to an even multiple of the number of usable cores. In the code, this defaults to (total number of available cores) - 1. The default is set based on many personal computers, which have 4 CPUs."
     )
 )
 
@@ -35,7 +31,7 @@ ticksize <- 1.75
 labelsize <- 1.75
 ypos <- 1:4
 ylim <- c(0.5, 4.5)
-dev.new(width = 14)
+pdf(outfile, width = 14, height = 7)
 panels <- layout(matrix(c(1, 1, 2, 3), ncol = 2))
 ##layout.show(panels)
                                         # Bifurcation diagram
@@ -102,7 +98,7 @@ legend(
     legend = c("Optimized on r = (1, 4, 5)", "Random, fixed-degree", "Random",
                "Optimized on r = (1, 3, 5)")
 )
-
+dev.off()
 
 ## ## better to do another strip plot here?
 
