@@ -25,6 +25,7 @@ args <- parse_args(
 
                                         # Libraries and functions
 library(latex2exp, lib.loc = "/user/neilmacl/rlocal/")
+library(sfsmisc)
 
                                         # Options
 palette("Tableau 10")
@@ -90,7 +91,8 @@ par(mfcol = c(length(nets)/2, 2))
 par(mar = c(2, 1, .5, 2)+0.75)
 for(i in seq_len(length(nets))) {
     plotit(dl[[i]])
-    axis(1, cex.axis = ticksize)
+    ##axis(1, cex.axis = ticksize)
+    eaxis(1, axTicks(1)[c(TRUE, FALSE)], cex.axis = ticksize, at.small = FALSE, sub10 = "10")
     mtext(LETTERS[i], cex = labelsize, line = -1, adj = 0.02, font = 2)
     if(i == 6) {
         legend(

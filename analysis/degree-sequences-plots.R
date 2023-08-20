@@ -24,6 +24,7 @@ args <- parse_args(
 )
 
 library(latex2exp, lib.loc = "/user/neilmacl/rlocal/")
+library(sfsmisc)
 
 palette("Tableau 10")
 use_weights <- args$use_weights
@@ -85,14 +86,15 @@ if(save_plots) {
 } else {
     dev.new(height = ht, width = wd)
 }
-par(mar = c(4, 4, 1, 1)+0.75, mfrow = c(1, 2))
+par(mar = c(5, 5, 1, 1), mfrow = c(1, 2))
                                         # KLD
 plot(
     1:maxn, klds, type = "p", col = 1, pch = 19, cex = 2, lwd = 2,
-    xlab = "", ylab = "Kullback-Leibler divergence", 
+    xlab = "", ylab = "Kullback-Leibler divergence", yaxt = "n",
     ylim = range(c(klds, as.numeric(rklds))), log = "y", 
     cex.axis = ticksize, cex.lab = labelsize
 )
+eaxis(2, axTicks(2), cex.axis = ticksize, at.small = FALSE, sub10 = "10", las = 0)
 title(xlab = "n", font.lab = 3, cex.lab = labelsize)
 points(1:maxn, colMeans(rklds), col = 2, pch = 19, cex = 2)
 segments(
@@ -101,13 +103,17 @@ segments(
     y1 = apply(rklds, 2, function(x) quantile(x, probs = 0.975)),
     lty = 1, lwd = 2, col = 2
 )
+mtext("A", line = -2.2, adj = 0.02, cex = labelsize, font = 2)
                                         # Error
 plot(
     1:length(dl), sapply(errs, mean), type = "p", col = 1, pch = 19, cex = 2, lwd = 2, log = "y",
-    xlab = "", ylab = "Mean Error", ylim = range(c(unlist(errs), as.numeric(rerrs))),
+    xlab = "", ylab = "Average approximation error", yaxt = "n",
+    ylim = range(c(unlist(errs), as.numeric(rerrs))), 
     cex.axis = ticksize, cex.lab = labelsize
 )
 title(xlab = "n", font.lab = 3, cex.lab = labelsize)
+## axis(2, axTicks(2)[c(TRUE, FALSE)], cex.axis = ticksize)
+eaxis(2, axTicks(2)[c(TRUE, FALSE)], cex.axis = ticksize, at.small = FALSE, sub10 = "10", las = 0)
 segments(
     x0 = 1:maxn,
     y0 = sapply(errs, function(x) quantile(x, probs = 0.025)),
@@ -125,6 +131,7 @@ legend(
     "topright", legend = c("Optimized", "Random"), bty = "n",
     col = c(1, 2), pch = 19, pt.cex = 2, cex = labelsize
 )
+mtext("B", line = -2.2, adj = 0.02, cex = labelsize, font = 2)
 ##axis(4, at = pretty(range(sapply(errs, mean))))
 ##mtext("Error", side = 4, font = 1, line = 3)
 ##abline(h = 0, col = 10, lwd = .75)

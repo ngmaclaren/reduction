@@ -20,6 +20,8 @@ dyn <- args$dynamics
 infile <- paste0("../data/transfer-learning-", net, "-", dyn, ".RData")
 outfile <- paste0("../img/transfer-learning-", net, "-", dyn, ".pdf")
 
+library(latex2exp, lib.loc = "/user/neilmacl/rlocal/")
+
 load(infile)
 
 sapply(soln_errors, median)
@@ -44,17 +46,23 @@ pdf(outfile, width = 14, height = 7)
 panels <- layout(matrix(c(1, 1, 2, 3), ncol = 2))
 ##layout.show(panels)
                                         # Bifurcation diagram
-plot(NULL, xlim = range(bp), ylim = range(c(gt, a1, a2)), xlab = "Bifurcation parameter", ylab = "x",
-     cex.axis = ticksize, cex.lab = labelsize)
+par(mar = c(5, 5, 1, 1))
+plot(
+    NULL, xlim = range(bp), ylim = range(c(gt, a1, a2)),
+    xlab = "Control parameter", ylab = TeX(r"($x^*$)", italic = TRUE),
+    cex.axis = ticksize, cex.lab = labelsize
+)
 lines(bp, gt, lty = 1, lwd = 8, col = 1)
 lines(bp, a1, lty = 1, lwd = 8, col = colorvecs$low[1])
 lines(bp, a2, lty = 1, lwd = 8, col = colorvecs$high[1])
 legend("bottomright", bty = "n", legend = c("(1, 3, 5)", "(1, 2, 5)", "(1, 4, 5)"), title = "r =",
        col = c(1, colorvecs$low[1], colorvecs$high[1]), lty = 1, lwd = 4, cex = 1.25)
+mtext("A", line = -2.1, adj = 0.01, font = 2, cex = labelsize)
                                         # low
+par(mar = c(5, 1, 1, 1))
 low_errors <- sapply(solns$low, `[[`, "error")
 plot(
-    NULL, xlab = "Error", ylab = "", log = "x", cex.axis = ticksize, cex.lab = labelsize,
+    NULL, xlab = "Approximation error", ylab = "", log = "x", cex.axis = ticksize, cex.lab = labelsize,
     xlim = range(c(low_errors, rand_errors$low)), ylim = ylim, axes = FALSE
 )
 points(
@@ -79,10 +87,11 @@ legend(
     legend = c("Optimized on r = (1, 2, 5)", "Random, fixed-degree", "Random",
                "Optimized on r = (1, 3, 5)")
 )
+mtext("B", line = -2.1, adj = 0.01, font = 2, cex = labelsize)
                                         # high
 high_errors <- sapply(solns$high, `[[`, "error")
 plot(
-    NULL, xlab = "Error", ylab = "", log = "x", cex.axis = ticksize, cex.lab = labelsize,
+    NULL, xlab = "Approximation error", ylab = "", log = "x", cex.axis = ticksize, cex.lab = labelsize,
     xlim = range(c(high_errors, rand_errors$high)), ylim = ylim, axes = FALSE
 )
 points(
@@ -107,3 +116,5 @@ legend(
     legend = c("Optimized on r = (1, 4, 5)", "Random, fixed-degree", "Random",
                "Optimized on r = (1, 3, 5)")
 )
+mtext("C", line = -2.1, adj = 0.01, font = 2, cex = labelsize)
+dev.off()

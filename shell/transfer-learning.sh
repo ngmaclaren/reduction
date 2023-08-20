@@ -15,8 +15,8 @@
 
 module load gcc/11.2.0 openmpi/4.1.1 r/4.2.0
 
-# declare -a networks=("dolphin" "celegans" "proximity" "euroroad" "email" "er" "gkk" "ba" "hk" "lfr")
-declare -a networks=("dolphin")
+declare -a networks=("dolphin" "celegans" "proximity" "euroroad" "email" "er" "gkk" "ba" "hk" "lfr")
+# declare -a networks=("dolphin")
 declare -a dynamics=("dw" "SIS" "genereg" "mutualistic")
 
 for i in "${networks[@]}"; do

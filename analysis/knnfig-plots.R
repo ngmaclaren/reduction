@@ -37,7 +37,7 @@ par(mar = c(4, 4, 1, 1)+0.5, mfrow = c(1, 2))
 plot(
     jitter(dat$k, amount = 0.2), dat$error, pch = 1, cex = 1.5, lwd = 3,
     col = adjustcolor(colorref$color[match(dat$k, colorref$k)], alpha.f = 1),
-    cex.axis = ticksize, cex.lab = labelsize, xlab = "Degree", ylab = "Error"
+    cex.axis = ticksize, cex.lab = labelsize, xlab = "Degree", ylab = "Approximation error"
 )
 points(as.numeric(k[ref$vs]), rep(ref$error, n),
        pch = 3, cex = 3, lwd = 3, col = "gray30")
@@ -56,7 +56,7 @@ plot(
     error ~ knn, data = df, pch = 1, cex = 1.5, lwd = 3,
     col = adjustcolor(colorref$color[match(df$k, colorref$k)], alpha.f = 1),
     cex.axis = ticksize, cex.lab = labelsize,
-    xlab = "Avg. nearest neighbor degree", ylab = "Avg. error"
+    xlab = "Avgerage nearest neighbor degree", ylab = "Approximation error"
 )
 points(
     df$knn[df$v %in% ref$vs], df$error[df$v %in% ref$vs],

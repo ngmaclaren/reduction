@@ -15,5 +15,10 @@
 
 module load gcc/11.2.0 openmpi/4.1.1 r/4.2.0
 
-Rscript ../sims/knnfig.R
-Rscript ../sims/knnfig.R -w
+# Default network for this simulation is the email network
+declare -a dynamics=("SIS" "genereg" "mutualistic") # "dw" 
+
+for i in "${dynamics[@]}"; do
+    Rscript ../sims/knnfig.R --dynamics=$i
+    Rscript ../sims/knnfig.R --dynamics=$i --optimize-weights
+done

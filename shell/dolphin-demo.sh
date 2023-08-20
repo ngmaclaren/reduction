@@ -16,4 +16,4 @@
 module load gcc/11.2.0 openmpi/4.1.1 r/4.2.0
 
 Rscript ../sims/dolphin-demo.R
-Rscript ../sims/dolphin-demo.R -w
+Rscript ../sims/dolphin-demo.R --optimize-weights

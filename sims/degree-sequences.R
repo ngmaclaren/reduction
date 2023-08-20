@@ -77,14 +77,27 @@ Y <- fullstate[[dynamics]]
 y <- rowMeans(Y)
 
 maxn <- 12
+                                        # Generate `ntrials` optimized node sets for each `n` from 1:12
 dl <- lapply(1:maxn, function(x) {
     make_dataset(x, ntrials, bparam, y, Y, optimize = TRUE, optimize_weights = optimize_weights,
                  verbose = verbose)
 })
 
+                                        # Tally k_i for the original distribution. Could have been
+                                        # written `table(k)`.
 kposs <- 1:max(k)
 refcounts <- sapply(kposs, function(x) sum(k == x))
 
+                                        # Tallies the number of nodes at each degree, summed over the
+                                        # trials, for each `n`. For the dolphin network, the max degree
+                                        # is 12. The final `histdat` is a list of matrices. The first
+                                        # element is the original degree distribution. Elements 2:9 are
+                                        # for the optimized node sets with n = 1:8. Within each
+                                        # element, the first row is for the first node in S, the second
+                                        # row is for the second node in S, and so on; the column
+                                        # corresponds to the degree of the node; and the entry
+                                        # corresponds to the count. The purpose of this data structure
+                                        # is to support `barplot()` in a downstream file.
 tally_row <- function(pos, n) {
     sapply(kposs, function(x) sum(sapply(dl[[n]], function(y) y$ks[pos]) == x))
 }
