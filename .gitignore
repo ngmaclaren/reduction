@@ -29,11 +29,12 @@ debug/
 # any .org files
 *.org
 
-<<<<<<< HEAD
 # any manuscript or related files
 /tex/
 
 # the image file dir
 /img/
-=======
->>>>>>> origin/main
+
+# Any plain text files
+*.txt
+
