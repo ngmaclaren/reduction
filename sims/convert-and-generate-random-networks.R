@@ -17,7 +17,7 @@ lfr <- graph_from_data_frame(read.table("../data/lfr.txt"), directed = FALSE)
 ## plot(lfr, vertex.size = 3, vertex.label = "")
 
                                         # Goh-Kahng-Kim node fitness graph with Cho et al correction
-get_gcc <- function(g) {
+get_gcc <- function(g) { # In case pre-1.5 version of igraph...
     if(is_directed(g)) {
         comps <- components(g, mode = "weak")
     } else comps <- components(g)

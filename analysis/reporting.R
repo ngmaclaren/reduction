@@ -13,7 +13,7 @@ report <- function(g) {
         "N = ", vcount(g), "\n",
         "M = ", ecount(g), "\n",
         "k.bar = ", mean(k), "\n",
-        "CV = ", mean(k)/sd(k), "\n",
+        "CV = ", sd(k)/mean(k), "\n",
         sep = ""
     )
 }
@@ -22,3 +22,4 @@ for(net in networks) {
     print(net)
     report(get(net))
 }
+

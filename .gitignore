@@ -28,3 +28,6 @@ debug/
 
 # any .org files
 *.org
+
+# any text files
+*.txt

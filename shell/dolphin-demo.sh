@@ -13,7 +13,9 @@
 #SBATCH --qos=general-compute
 #SBATCH --cluster=ub-hpc
 
-module load gcc/11.2.0 openmpi/4.1.1 r/4.2.0
+module load gcc
+module load openmpi
+module load r
 
 Rscript ../sims/dolphin-demo.R
 Rscript ../sims/dolphin-demo.R --optimize-weights
