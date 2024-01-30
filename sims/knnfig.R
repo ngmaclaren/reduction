@@ -19,13 +19,22 @@ optionlist <- list(
     ),
     make_option(
         c("-d", "--dynamics"), type = "character", default = "dw",
-        help = "The dynamics to simulate on each network. Default is 'dw'. Options: 'dw', 'SIS', 'genereg', 'mutualistic', and 'wilsoncowan'."
+        help = "The dynamics to simulate on each network. Default is 'dw'. Options: 'dw', 'SIS', 'genereg', and 'mutualistic'."
     ),
     make_option(
-        c("-n", "--ntrials"), type = "integer", default = 3,
-        help = "The number of independent simulations on each network [default %default]. To be more efficient, set to an even multiple of the number of usable cores. In the code, this defaults to (total number of available cores) - 1. The default is set based on many personal computers, which have 4 CPUs."
+        c("-r", "--random-seed"),
+        ## action = "store_true", default = FALSE,
+        ## help = "Optionally, use a random seed. The default is %default, which uses a hard-coded random seed."
+        type = "integer", default = NULL,
+        help = "Optionally, provide an integer for a random seed. Default is %default, which will use a hard-coded random seed."
     )
 )
+                                        #,
+    ## make_option(
+    ##     c("-n", "--ntrials"), type = "integer", default = 3,
+    ##     help = "The number of independent simulations on each network [default %default]. To be more efficient, set to an even multiple of the number of usable cores. In the code, this defaults to (total number of available cores) - 1. The default is set based on many personal computers, which have 4 CPUs."
+    ## )
+##)
 
 args <- parse_args(
     OptionParser(option_list = optionlist),
@@ -38,6 +47,18 @@ ncores <- detectCores() - 1
 library(igraph)
 library(deSolve)
 source("../src/functions.R")
+## set.seed(12345)                                                        ##!!!!!! for testing
+## if(args$random_seed) {
+##     seed <- sample(1000:9999, 1)
+## } else {
+##     seed <- 12345
+## }
+if(is.null(args$random_seed)) {
+    seed <- 12345
+} else {
+    seed <- args$random_seed
+}
+set.seed(seed)
 
                                         # Extract options
 verbose <- args$verbose
@@ -45,13 +66,13 @@ save_plots <- args$save_plots
 optimize_weights <- args$optimize_weights
 dynamics <- args$dynamics
 net <- args$network
-ntrials <- args$ntrials
+## ntrials <- args$ntrials
 
 load(paste0("../data/", net, ".rda"))
 load(paste0("../data/fullstate-", net, ".rda"))
 outputfile <- switch(
     optimize_weights + 1,
-    paste0("../data/knnfig-", net, "-", dynamics, ".RData"), # FALSE
+    paste0("../data/knnfig-", net, "-", dynamics, "-", seed, ".RData"), # FALSE
     paste0("../data/knnfig-", net, "-", dynamics, "-weighted.RData")
 )
 
@@ -64,8 +85,7 @@ bparam <- switch(
     dw = doublewell_parms$Ds,
     SIS = SIS_parms$Ds,
     genereg = genereg_parms$Ds,
-    mutualistic = mutualistic_parms$Cs,
-    wilsoncowan = wilsoncowan_parms$c5s
+    mutualistic = mutualistic_parms$Cs
 )
 Y <- fullstate[[dynamics]]
 y <- rowMeans(Y)
@@ -75,7 +95,8 @@ ref <- experiment(n, y, Y, bparam, optimize_weights = optimize_weights, trace = 
 
 dat <- mclapply(
     ref$vs, function(i) {
-        comps <- as.numeric(V(g)[which(k == k[i])])
+        ## comps <- as.numeric(V(g)[which(k == k[i])])
+        comps <- as.numeric(V(g)[which(k == k[i] & !(V(g) %in% ref$vs))])
         lapply(comps, function(j) {
             newset <- c(ref$vs[-which(ref$vs == i)], j)
             obj <- obj_fn(newset, y, Y, bparam, optimize_weights = optimize_weights)

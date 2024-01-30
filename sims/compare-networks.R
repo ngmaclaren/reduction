@@ -15,7 +15,7 @@ optionlist <- list(
     ),
     make_option(
         c("-d", "--dynamics"), type = "character", default = "dw",
-        help = "The dynamics to simulate on each network. Default is 'dw'. Options: 'dw', 'SIS', 'genereg', 'mutualistic', and 'wilsoncowan'."
+        help = "The dynamics to simulate on each network. Default is 'dw'. Options: 'dw', 'SIS', 'genereg', and 'mutualistic'."
     ),
     make_option(
         c("-n", "--ntrials"), type = "integer", default = 3,
@@ -51,7 +51,7 @@ outputfile <- switch(
 
                                         # Data setup
 nets <- c(
-    "dolphin", "celegans", "proximity", "euroroad", "email", "er", "gkk", "ba", "hk", "lfr"
+    "dolphin", "celegans", "proximity", "euroroad", "email", "er", "ba", "hk", "gkk", "lfr"
 )
 envs <- paste(nets, "env", sep = "_")
 

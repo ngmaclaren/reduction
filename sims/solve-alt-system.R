@@ -14,7 +14,7 @@ g <- get(network)
 N <- vcount(g)
 A <- as_adj(g, "both", sparse = FALSE)
 k <- degree(g)
-mutualistic_parms$D <- N/10
+## mutualistic_parms$D <- N/10
 
 print("solving doublewell...")
 dw1 <- with(
@@ -49,35 +49,22 @@ gr2 <- with(
 print("solving mutualistic species...")
 ms1 <- with(
     mutualistic_parms,
-    solve_mutualistic(x = rep(x.init, N), B = B, K = 3, Cs = Cs, D = D, E = E, H = H, A = A) # .5*K
+    solve_mutualistic(
+        x = rep(x.init, N), B = B, K = K - 2, C = C, Ds = Ds, D.tilde = D.tilde, E = E, H = H, A = A
+    )
 )
 ms2 <- with(
     mutualistic_parms,
-    solve_mutualistic(x = rep(x.init, N), B = B, K = 7, Cs = Cs, D = D, E = E, H = H, A = A) # 2*K
+    solve_mutualistic(
+        x = rep(x.init, N), B = B, K = K + 2, C = C, Ds = Ds, D.tilde = D.tilde, E = E, H = H, A = A
+    )
 )
-
-## print("solving Wilson-Cowan...")
-## wc1 <- with(
-##     wilsoncowan_parms, {
-##         wilsoncowan_parms$c1 <- wilsoncowan_parms$c1/2
-##         wilsoncowan_parms$c3 <- wilsoncowan_parms$c3/2
-##         solve_wilsoncowan(E = rep(E.init, N), I = rep(I.init, N), c5s = c5s, A = A, N = N)
-##     }
-## )
-## wc2 <- with(
-##     wilsoncowan_parms, {
-##         wilsoncowan_parms$c2 <- wilsoncowan_parms$c2/2
-##         wilsoncowan_parms$c4 <- wilsoncowan_parms$c4/2
-##         solve_wilsoncowan(E = rep(E.init, N), I = rep(I.init, N), c5s = c5s, A = A, N = N)
-##     }
-## )
 
 fullstate_alt <- list(
     dw1 = dw1, dw2 = dw2,
     sis1 = sis1, sis2 = sis2,
     gr1 = gr1, gr2 = gr2,
-    ms1 = ms1, ms2 = ms2#,
-    ##wc1 = wc1, wc2 = wc2
+    ms1 = ms1, ms2 = ms2
 )
 
 attr(fullstate_alt, "graph") <- g

@@ -4,5 +4,5 @@ declare -a networks=("dolphin" "celegans" "proximity" "euroroad" "email" "er" "g
 
 for i in "${networks[@]}"; do
     sbatch solve-full-system.sh $i
-    #sbatch solve-alt-system.sh $i
+    sbatch solve-alt-system.sh $i
 done

@@ -1,5 +1,19 @@
+## Switch these to use generate_data() instead.
+## Check transfer-learning-plots.R for the needed variables
+## solns, soln_errors, comp_errors, rand_errors
+## [x (I think)] For this sim and compare-networks.R, use the min error soln instead of the median.
+
+
 library(optparse)
 optionlist <- list(
+    make_option(
+        c("-v", "--verbose"), action = "store_true", default = FALSE,
+        help = "Show optimization details. Setting this flag sets `trace = TRUE` in `optim()` and `mc.silent = FALSE` in `mclapply()`."
+    ),
+    make_option(
+        c("-w", "--optimize-weights"), action = "store_true", default = FALSE,
+        help = "Use quadratic programming to optimize weights of nodes selected by simulated annealing. Substantially increases run time (approximately 4--5x)."
+    ),
     make_option(
         c("-g", "--network"), type = "character", default = "dolphin",
         help = "The network on which to compare each dynamics. Default is %default. Options: 'dolphin', 'celegans', 'proximity', 'euroroad', 'email', 'er', 'gkk', 'ba', 'hk', 'lfr'."
@@ -24,6 +38,8 @@ ncores <- detectCores() - 1
 RNGkind("L'Ecuyer-CMRG")
 library(igraph)
 
+verbose <- args$verbose
+optimize_weights <- args$optimize_weights
 network <- args$network
 dynamics <- args$dynamics
 ntrials <- args$ntrials
@@ -40,12 +56,13 @@ A <- as_adj(g, "both", sparse = FALSE)
 k <- degree(g)
 n <- floor(log(N))
 
+                                        # Change this to take the sequences from the standard objects
 bp <- switch(
     dynamics,
-    dw = seq(0.001, 1, length.out = lout),
-    SIS = seq(0.001, 1, length.out = lout),
-    genereg = seq(0.001, 1, length.out = lout),
-    mutualistic = seq(0.1, 2, length.out = lout)
+    dw = doublewell_parms$Ds, # seq(0.001, 1, length.out = lout),
+    SIS = SIS_parms$Ds, # seq(0.001, 1, length.out = lout),
+    genereg = genereg_parms$Ds, # seq(0.001, 1, length.out = lout),
+    mutualistic = mutualistic_parms$Ds # seq(0.1, 2, length.out = lout)
 )
 alt1 <- switch(
     dynamics,
@@ -71,46 +88,80 @@ a1 <- rowMeans(A1)
 A2 <- fullstate_alt[[alt2]]
 a2 <- rowMeans(A2)
 
-solns <- list(
-    orig = mclapply(seq(ntrials), function(x) experiment(n, gt, GT, bp), mc.cores = ncores),
-    low = mclapply(seq(ntrials), function(x) experiment(n, a1, A1, bp), mc.cores = ncores),
-    high = mclapply(seq(ntrials), function(x) experiment(n, a2, A2, bp), mc.cores = ncores)
+orig <- generate_data(
+    g, GT, gt, n, ntrials = ntrials, optimize_weights = optimize_weights, verbose = verbose
 )
-        
-comps <- list(
-    orig = mclapply(
-        solns$orig,
-        function(opt) make_dataset(n, ntrials, bp, gt, GT, comps = opt$vs),
-        mc.cores = ncores
-    ),
-    low = mclapply(
-        solns$low,
-        function(opt) make_dataset(n, ntrials, bp, a1, A1, comps = opt$vs),
-        mc.cores = ncores
-    ),
-    high = mclapply(
-        solns$high,
-        function(opt) make_dataset(n, ntrials, bp, a2, A2, comps = opt$vs),
-        mc.cores = ncores
-    )
+low <- generate_data(
+    g, A1, a1, n, ntrials = ntrials, optimize_weights = optimize_weights, verbose = verbose
 )
-
-rand <- list(
-    orig = make_dataset(n, ntrials^2, bp, gt, GT),
-    low = make_dataset(n, ntrials^2, bp, a1, A1),
-    high = make_dataset(n, ntrials^2, bp, a2, A2)
+high <- generate_data(
+    g, A2, a2, n, ntrials = ntrials, optimize_weights = optimize_weights, verbose = verbose
 )
 
 soln_errors <- list(
-    orig = sapply(solns$orig, `[[`, "error"),
-    low = sapply(solns$orig, function(soln) obj_fn(soln$vs, a1, A1, bp)),
-    high = sapply(solns$orig, function(soln) obj_fn(soln$vs, a2, A2, bp))
+    orig = orig$oe, # sapply(solns$orig, `[[`, "error"),
+    ## low = sapply(solns$orig, function(soln) obj_fn(soln$vs, a1, A1, bp)),
+    low = apply(orig$ovs, 1, function(vs) obj_fn(vs, a1, A1, bp)),
+    ## high = sapply(solns$orig, function(soln) obj_fn(soln$vs, a2, A2, bp))
+    high = apply(orig$ovs, 1, function(vs) obj_fn(vs, a2, A2, bp))
 )
 
-comp_errors <- lapply(comps, function(complist) {
-    do.call(cbind, lapply(complist, function(comp) sapply(comp, `[[`, "error")))
-})
+comp_errors <- list(
+    orig = orig$fe,
+    low = low$fe,
+    high = high$fe
+)
 
-rand_errors <- lapply(rand, function(comp) sapply(comp, `[[`, "error"))
+## comp_errors <- lapply(comps, function(complist) {
+##     do.call(cbind, lapply(complist, function(comp) sapply(comp, `[[`, "error")))
+## })
+
+rand_errors <- list(
+    orig = orig$re,
+    low = low$re,
+    high = high$re
+)
+
+## rand_errors <- lapply(rand, function(comp) sapply(comp, `[[`, "error"))
 
 save.image(outputfile)
+
+## old code ##
+## solns <- list(
+##     orig = mclapply(seq(ntrials), function(x) experiment(n, gt, GT, bp), mc.cores = ncores),
+##     low = mclapply(seq(ntrials), function(x) experiment(n, a1, A1, bp), mc.cores = ncores),
+##     high = mclapply(seq(ntrials), function(x) experiment(n, a2, A2, bp), mc.cores = ncores)
+## )
+## comps <- list(
+##     orig = mclapply(
+##         solns$orig,
+##         function(opt) make_dataset(n, ntrials, bp, gt, GT, comps = opt$vs),
+##         mc.cores = ncores
+##     ),
+##     low = mclapply(
+##         solns$low,
+##         function(opt) make_dataset(n, ntrials, bp, a1, A1, comps = opt$vs),
+##         mc.cores = ncores
+##     ),
+##     high = mclapply(
+##         solns$high,
+##         function(opt) make_dataset(n, ntrials, bp, a2, A2, comps = opt$vs),
+##         mc.cores = ncores
+##     )
+## )
+
+## rand <- list(
+##     orig = make_dataset(n, ntrials^2, bp, gt, GT),
+##     low = make_dataset(n, ntrials^2, bp, a1, A1),
+##     high = make_dataset(n, ntrials^2, bp, a2, A2)
+## )
+
+## bad code ##
+## solns <- lapply(list(orig, low, high), function(dl) {
+##     idx <- which.min(dl$oe)
+##     list(
+##         vs = dl$ovs[[idx]],
+##         error = dl$oe[[idx]],
+##         ks = dl$oks[[idx]]
+##     )
+## })

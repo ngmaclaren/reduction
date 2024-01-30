@@ -19,7 +19,7 @@ optionlist <- list(
     ),
     make_option(
         c("-d", "--dynamics"), type = "character", default = "dw",
-        help = "The dynamics to simulate on each network. Default is 'dw'. Options: 'dw', 'SIS', 'genereg', 'mutualistic', and 'wilsoncowan'."
+        help = "The dynamics to simulate on each network. Default is 'dw'. Options: 'dw', 'SIS', 'genereg', and 'mutualistic'."
     ),
     make_option(
         c("-n", "--ntrials"), type = "integer", default = 3,
@@ -70,8 +70,7 @@ bparam <- switch(
     dw = doublewell_parms$Ds,
     SIS = SIS_parms$Ds,
     genereg = genereg_parms$Ds,
-    mutualistic = mutualistic_parms$Cs,
-    wilsoncowan = wilsoncowan_parms$c5s
+    mutualistic = mutualistic_parms$Cs
 )
 Y <- fullstate[[dynamics]]
 y <- rowMeans(Y)

@@ -19,14 +19,13 @@ optionlist <- list(
 )
 
 args <- parse_args(
-    OptionParser(option_list = optionlist), #args = c("-s", "-w"),
+    OptionParser(option_list = optionlist), #args = c("-s"),#, "-w"),
     convert_hyphens_to_underscores = TRUE
 )
 
                                         # Libraries and functions
 library(latex2exp, lib.loc = "/user/neilmacl/rlocal/")
 library(sfsmisc)
-
                                         # Options
 palette("Tableau 10")
 use_weights <- args$use_weights
@@ -46,9 +45,18 @@ outfile <- switch(
 
 load(infile)
 save_plots <- saveplots # hack-ish. Fix?
+placelabel <- function(label, x, y, ...) {
+    xlim <- par("usr")[1:2]
+    ylim <- par("usr")[3:4]
+    xpos <- xlim[1] + x*(xlim[2] - xlim[1])
+    ypos <- ylim[1] + y*(ylim[2] - ylim[1])
+    if(par("xlog")) xpos <- 10^xpos
+    if(par("ylog")) ypos <- 10^ypos
+    text(xpos, ypos, label, ...)
+}
 
                                         # Plotting
-plotit <- function(dl, xlab = "", ylab = "") {
+plotit <- function(dl, panellabel = "", xlab = "", ylab = "") {
     re <- dl$re; fe <- dl$fe; oe <- dl$oe
     ht <- 2
     wd <- 7
@@ -88,16 +96,17 @@ if(save_plots) {
     dev.new(height = 12)
 }
 par(mfcol = c(length(nets)/2, 2))
-par(mar = c(2, 1, .5, 2)+0.75)
+par(mar = c(2, 2, .25, 2)+0.75)
 for(i in seq_len(length(nets))) {
     plotit(dl[[i]])
     ##axis(1, cex.axis = ticksize)
     eaxis(1, axTicks(1)[c(TRUE, FALSE)], cex.axis = ticksize, at.small = FALSE, sub10 = "10")
-    mtext(LETTERS[i], cex = labelsize, line = -1, adj = 0.02, font = 2)
-    if(i == 6) {
+    ##mtext(LETTERS[i], cex = labelsize, line = -1, adj = 0.02, font = 2)
+    placelabel(paste0("(", letters[i], ")"), 0.01, 0.99, adj = c(0, 1), cex = labelsize)
+    if(i == 1) {
         legend(
             "topright", bty = "n", col = 1:3, pch = 19, pt.cex = 1.5, cex = 1.5,
-            legend = c("Optimized", "Random, fixed degree", "Random")
+            legend = c("Optimized", "Degree-preserving random", "Completely random")
         )
     }
 }
@@ -110,3 +119,9 @@ tbl <- data.frame(
 )
     
 print(tbl)
+
+sum(dl[[1]]$re < max(dl[[1]]$oe))
+sum(dl[[1]]$fe < max(dl[[1]]$oe))
+
+summary(dl[[1]]$fe)
+summary(dl[[1]]$oe)

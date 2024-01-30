@@ -59,11 +59,15 @@ GBB.b <- mean(k^2)/mean(k)
 GBB <- with(doublewell_parms, {
     solve_doublewell(x = x.init, r = r, Ds = Ds, A = matrix(1), b = GBB.b)
 })
+GBB.obs <- apply(Y, 1, function(x) mean(k*x)/mean(k))
 
-DART.b <- eigen(A, only.values = TRUE)$values[1]
+eigs <- eigen(A, symmetric = TRUE)
+DART.a <- eigs$vectors[, 1]/sum(eigs$vectors[, 1])
+DART.b <- eigs$values[1]
 DART <- with(doublewell_parms, {
     solve_doublewell(x = x.init, r = r, Ds = Ds, A = matrix(1), b = DART.b)
 })
+DART.obs <- apply(Y, 1, function(x) sum(DART.a*x))
 
                                         # Node set selection
 solns <- lapply(ns, function(n) {
