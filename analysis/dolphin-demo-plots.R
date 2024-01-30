@@ -46,10 +46,10 @@ colors <- list(
     nodestates = adjustcolor("gray60", alpha.f = .5),
     systemstate = "gray30",
     approximation = 1,
-    selectednodes = 6,
-    DART = 2,
+    selectednodes = 5,
+    DART = 3,
     GBB = 4,
-    exact = 5
+    exact = 2
 )
 ht <- 10
 wd <- 12
@@ -89,14 +89,14 @@ for(i in seq_along(solns)) {
                     rowMeans(as.matrix(Y[, exact[[i]]$vs])), # false
                     apply(as.matrix(Y[, exact[[i]]$vs]), 1, weighted.mean, exact[[i]]$ws) # true
                 ),
-                lty = 2, lwd = 6, col = colors$exact
+                lty = 2, lwd = 5, col = colors$exact
             )
         }   
     })
-    mtext(LETTERS[i], line = -2.33, adj = 0.01, font = 2, cex = labelsize)
-    if(i == length(ns)) {
+    mtext(LETTERS[i], line = -2.2, adj = 0.02, font = 2, cex = labelsize)
+    if(i == 2) { # length(ns)
         legend(
-            "bottomright", bty = "n", cex = 1.5, lwd = 2.5, lty = c(rep(1, 6), 2),
+            "bottomright", bty = "n", cex = 1.5, lwd = 3, lty = c(rep(1, 6), 2),
             col = unlist(colors),
             legend = c(
                 "Node states",

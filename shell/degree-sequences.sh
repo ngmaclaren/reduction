@@ -15,5 +15,5 @@
 
 module load gcc/11.2.0 openmpi/4.1.1 r/4.2.0
 
-Rscript ../sims/degree-sequences.R -n 100
-Rscript ../sims/degree-sequences.R -n 100 -w
+Rscript ../sims/degree-sequences.R --ntrials=100
+Rscript ../sims/degree-sequences.R --ntrials=100 --optimize-weights

@@ -3,58 +3,6 @@ require(ROI.plugin.qpoases, lib.loc = "/user/neilmacl/rlocal/")
 
 lout <- 100 
 
-### Wilson-Cowan Model of Neuron Excitation/Inhibition
-## to implement the delay, need to solve with dede instead of ode and include a tau parameter
-wilsoncowan <- function(t, z, parms) { # x needs to be c(E, I)
-    with(parms, {
-        E <- z[1:N]
-        I <- z[(N+1):(2*N)]
-        
-        dE <- -E + (S_Emax - E)*S_E(c1*E - c2*I + c5*colSums(A*E) + P)
-        dI <- -I + (S_Imax - I)*S_I(c3*E - c4*I)
-        return(list(c(dE, dI)))
-    })
-}
-
-solve_wilsoncowan <- function(E, I, c5s, A, N, times = 0:15) {
-    z <- c(E, I)
-    if("parallel" %in% sessionInfo()$basePkgs) {
-        ncores <- detectCores() - 1
-        results <- mclapply(
-            c5s, function(c5) {
-                ode(z, times, wilsoncowan, parms = c(wilsoncowan_parms, c5 = c5, A = A, N = N))
-            }, mc.cores = ncores, mc.silent = TRUE
-        )
-    } else  {
-        results <- lapply(c5s, function(c5) {
-            ode(z, times, wilsoncowan, parms = c(wilsoncowan_parms, c5 = c5, A = A, N = N))
-        })
-    }
-
-    output <- do.call(rbind, lapply(results, function(df) df[nrow(df), -1]))
-    colnames(output) <- c(paste0("E", 1:N), paste0("I", 1:N))
-    return(output)
-}
-
-wilsoncowan_parms <- list(
-    E.init = 1,
-    I.init = 1,
-    c1 = 16,
-    c2 = 12,
-    c3 = 15,
-    c4 = 3,
-    ##c5 = .1,
-    P = 0,
-    ## τ = 8, # time constant, ignoring
-    ## τ_d = 10, # delay, ignoring
-    S_Emax = 1, # this is a guess based on the original paper
-    S_Imax = 1, # this is a guess based on the original paper
-    S_E = function(x, a_E = 1.3, θ_E = 4) {(1/(1 + exp(-a_E*(x - θ_E)))) - (1/(1 + exp(a_E*θ_E)))},
-    S_I = function(x, a_I = 2, θ_I = 3.7) {(1/(1 + exp(-a_I*(x - θ_I)))) - (1/(1 + exp(a_I*θ_I)))},
-    c5s = seq(0.001, 15, length.out = lout),
-    Ps = seq(0, 7, length.out = lout)# bifurcation parameter; stimulation to 1 node?; 1.25
-)
-
 ### Mutualistic Species Dynamics
 mutualistic <- function(t, x, parms) {
     with(parms, {#B, K, C, D, E, H, A
@@ -87,9 +35,9 @@ solve_mutualistic <- function(x, B, K, Cs, D, E, H, A, times = 0:15) {
 mutualistic_parms <- list(
     x.init = 0.001,
     B = 0.1,
-    K = 5, # 5
-    Cs = seq(0.1, 2, length.out = lout),
-    D = 10,
+    K = 5,
+    Cs = seq(0.1, 2.5, length.out = lout),
+    D = 5,
     E = 0.9,
     H = 0.1,
     times = 0:15
@@ -358,10 +306,23 @@ generate_data <- function(g, Y, y, n, ntrials = 100, optimize_weights = FALSE, v
     fixingdeg <- make_dataset(n, ntrials, doublewell_parms$Ds, y, Y, comps = ref)
     fixingdeg_errors <- sapply(fixingdeg, `[[`, "error")
 
+    rvs <- t(sapply(random, `[[`, "vs"))
+    rks <- t(sapply(random, `[[`, "ks"))
+    fvs <- t(sapply(fixingdeg, `[[`, "vs"))
+    fks <- t(sapply(fixingdeg, `[[`, "ks"))
+    ovs <- t(sapply(optimized, `[[`, "vs"))
+    oks <- t(sapply(optimized, `[[`, "ks"))
+
     dl <- list(
         re = random_errors,
         fe = fixingdeg_errors,
-        oe = optimized_errors
+        oe = optimized_errors,
+        rvs = rvs,
+        fvs = fvs,
+        ovs = ovs,
+        rks = rks,
+        fks = fks,
+        oks = oks
     )
     return(dl)
 }
@@ -403,3 +364,57 @@ kuramoto_parms <- list(
     Ds = seq(0, .25, by = .0005),
     αs = 1
 )
+
+
+### Wilson-Cowan Model of Neuron Excitation/Inhibition
+## to implement the delay, need to solve with dede instead of ode and include a tau parameter
+wilsoncowan <- function(t, z, parms) { # x needs to be c(E, I)
+    with(parms, {
+        E <- z[1:N]
+        I <- z[(N+1):(2*N)]
+        
+        dE <- -E + (S_Emax - E)*S_E(c1*E - c2*I + c5*colSums(A*E) + P)
+        dI <- -I + (S_Imax - I)*S_I(c3*E - c4*I)
+        return(list(c(dE, dI)))
+    })
+}
+
+solve_wilsoncowan <- function(E, I, c5s, A, N, times = 0:15) {
+    z <- c(E, I)
+    if("parallel" %in% sessionInfo()$basePkgs) {
+        ncores <- detectCores() - 1
+        results <- mclapply(
+            c5s, function(c5) {
+                ode(z, times, wilsoncowan, parms = c(wilsoncowan_parms, c5 = c5, A = A, N = N))
+            }, mc.cores = ncores, mc.silent = TRUE
+        )
+    } else  {
+        results <- lapply(c5s, function(c5) {
+            ode(z, times, wilsoncowan, parms = c(wilsoncowan_parms, c5 = c5, A = A, N = N))
+        })
+    }
+
+    output <- do.call(rbind, lapply(results, function(df) df[nrow(df), -1]))
+    colnames(output) <- c(paste0("E", 1:N), paste0("I", 1:N))
+    return(output)
+}
+
+wilsoncowan_parms <- list(
+    E.init = 1,
+    I.init = 1,
+    c1 = 16,
+    c2 = 12,
+    c3 = 15,
+    c4 = 3,
+    ##c5 = .1,
+    P = 0,
+    ## τ = 8, # time constant, ignoring
+    ## τ_d = 10, # delay, ignoring
+    S_Emax = 1, # this is a guess based on the original paper
+    S_Imax = 1, # this is a guess based on the original paper
+    S_E = function(x, a_E = 1.3, θ_E = 4) {(1/(1 + exp(-a_E*(x - θ_E)))) - (1/(1 + exp(a_E*θ_E)))},
+    S_I = function(x, a_I = 2, θ_I = 3.7) {(1/(1 + exp(-a_I*(x - θ_I)))) - (1/(1 + exp(a_I*θ_I)))},
+    c5s = seq(0.001, 15, length.out = lout),
+    Ps = seq(0, 7, length.out = lout)# bifurcation parameter; stimulation to 1 node?; 1.25
+)
+

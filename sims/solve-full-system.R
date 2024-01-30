@@ -14,6 +14,7 @@ g <- get(network)
 N <- vcount(g)
 A <- as_adj(g, "both", sparse = FALSE)
 k <- degree(g)
+mutualistic_parms$D <- N/10
 
 print("solving doublewell...")
 Y.doublewell <- with(

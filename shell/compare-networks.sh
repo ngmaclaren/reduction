@@ -2,8 +2,8 @@
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=52
-#SBATCH --mem=500000
+#SBATCH --cpus-per-task=26
+#SBATCH --mem=50000
 #SBATCH --time=70:00:00
 
 #SBATCH --job-name=compare-networks
@@ -16,9 +16,9 @@
 
 module load gcc/11.2.0 openmpi/4.1.1 r/4.2.0
 
-declare -a dynamics=("dw" "SIS" "genereg" "mutualistic" "wilsoncowan")
+declare -a dynamics=("dw" "SIS" "genereg" "mutualistic")
 
 for i in "${dynamics[@]}"; do
-    Rscript ../sims/compare-networks.R -d $i -n 100
-    Rscript ../sims/compare-networks.R -d $i -n 100 -w
+    Rscript ../sims/compare-networks.R --dynamics=$i --ntrials=100 
+    Rscript ../sims/compare-networks.R --dynamics=$i --ntrials=100 --optimize-weights
 done
