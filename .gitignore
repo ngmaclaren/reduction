@@ -28,3 +28,9 @@ debug/
 
 # any .org files
 *.org
+
+# any manuscript or related files
+/tex/
+
+# the image file dir
+/img/
