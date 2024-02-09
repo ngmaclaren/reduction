@@ -22,7 +22,7 @@ args <- parse_args(
 
 if(interactive()) {
     if(getwd() != "/user/neilmacl/Documents/reduction/analysis") setwd("./analysis")
-    network <- "proximity"
+    network <- "dolphin"
     A.dynamics <- "dw" # "genereg"
     B.dynamics <- "SIS"
     outfile <- "test.pdf"
@@ -31,7 +31,7 @@ if(interactive()) {
     A.dynamics <- args$dynamicsA
     B.dynamics <- args$dynamicsB
     outfile <- paste0(
-        "../img/dynamics-comparison/",
+        "../img/dynamics-comparisons/",
         paste(c(network, A.dynamics, B.dynamics), collapse = "-"),
         ".pdf"
     )
@@ -39,7 +39,7 @@ if(interactive()) {
 
 library(parallel)
 ncores <- detectCores() - 1
-library(igraph, lib.loc = "/user/neilmacl/rlocal")
+library(igraph)#, lib.loc = "/user/neilmacl/rlocal")
 library(deSolve)
 source("../src/functions.R")
 RNGkind("L'Ecuyer-CMRG")
@@ -98,7 +98,8 @@ A.bestopt <- A$opt[which.min(get_error(A$opt))][[1]]
 A$fixed <- make_dataset(n, ntrials, A.bparam, A.y, A.Y, comps = A.bestopt$vs)
 A$rand <- make_dataset(n, ntrials, A.bparam, A.y, A.Y)
 A$constr <- make_dataset(n, ntrials, A.bparam, A.y, A.Y, use_connections = TRUE)
-A$quant <- make_dataset(n, ntrials, A.bparam, A.y, A.Y, use_connections = TRUE, use_quantiles = TRUE)
+##A$quant <- make_dataset(n, ntrials, A.bparam, A.y, A.Y, use_connections = TRUE, use_quantiles = TRUE)
+A$comm <- make_dataset(n, ntrials, A.bparam, A.y, A.Y, use_connections = TRUE, use_communities = TRUE)
 
 B <- list(opt = opts[[paste(c(network, B.dynamics), collapse = "_")]])
 B.bparam <- get_bparam(B.dynamics)
@@ -108,12 +109,13 @@ B.bestopt <- B$opt[which.min(get_error(B$opt))][[1]]
 B$fixed <- make_dataset(n, ntrials, B.bparam, B.y, B.Y, comps = B.bestopt$vs)
 B$rand <- make_dataset(n, ntrials, B.bparam, B.y, B.Y)
 B$constr <- make_dataset(n, ntrials, B.bparam, B.y, B.Y, use_connections = TRUE)
-B$quant <- make_dataset(n, ntrials, B.bparam, B.y, B.Y, use_connections = TRUE, use_quantiles = TRUE)
+## B$quant <- make_dataset(n, ntrials, B.bparam, B.y, B.Y, use_connections = TRUE, use_quantiles = TRUE)
+B$comm <- make_dataset(n, ntrials, B.bparam, B.y, B.Y, use_connections = TRUE, use_communities = TRUE)
 
                                         # demonstration node sets
-demo_VS <- lapply(vdf, function(cm) order(cm, decreasing = TRUE)[1:n])
-demo_error_A <- lapply(demo_VS, function(vs) obj_fn(vs, A.y, A.Y, A.bparam))
-demo_error_B <- lapply(demo_VS, function(vs) obj_fn(vs, B.y, B.Y, B.bparam))
+## demo_VS <- lapply(vdf, function(cm) order(cm, decreasing = TRUE)[1:n])
+## demo_error_A <- lapply(demo_VS, function(vs) obj_fn(vs, A.y, A.Y, A.bparam))
+## demo_error_B <- lapply(demo_VS, function(vs) obj_fn(vs, B.y, B.Y, B.bparam))
 
 
 xdf <- data.frame(lapply(A, get_error))
@@ -128,8 +130,8 @@ ydf <- data.frame(
 
 ## oldcomps <- get_error(B$fixed)
 
-xlim <- range(c(unlist(xdf), .9*min(xdf$opt), unlist(demo_error_A)))
-ylim <- range(unlist(ydf), unlist(demo_error_B))
+xlim <- range(c(unlist(xdf), .9*min(xdf$opt)))#, unlist(demo_error_A)))
+ylim <- range(unlist(ydf))#, unlist(demo_error_B))
 
 pdf(outfile)
 palette("Set 1")
@@ -139,7 +141,7 @@ plot(
 )
 legend(
     "bottomright", col = 1:5, pch = 1, pt.lwd = 2, bty = "n",
-    legend = c("Optimized", "Fixed-degree", "Random", "Constrained", "Quantiled")
+    legend = c("Optimized", "Fixed-degree", "Random", "Constrained", "Community-based") # "Quantiled"
 )
 for(i in seq_along(xdf)) points(xdf[[i]], ydf[[i]], col = adjustcolor(i, .5), pch = 1)
 for(i in seq_along(xdf)) points(mean(xdf[[i]]), mean(ydf[[i]]), col = i, pch = 1, cex = 2, lwd = 3)
@@ -150,8 +152,8 @@ for(i in seq_along(xdf)) points(mean(xdf[[i]]), mean(ydf[[i]]), col = i, pch = 1
 ##           "\n(smaller is better, if =1 then no difference)"),
 ##     .02, .98, adj = c(0, 1)
 ## )
-cols <- palette.colors(palette = "Okabe-Ito")[-1]
-for(i in seq_along(vdf)) points(demo_error_A[[i]], demo_error_B[[i]], col = cols[i], pch = 0, cex = 2, lwd = 3)
-legend("bottom", bty = "n", col = cols[seq_along(vdf)], pch = 0, pt.lwd = 2,
-       legend = c("Degree", "Betweenness", "Closeness", "Eigenvector"))
+## cols <- palette.colors(palette = "Okabe-Ito")[-1]
+## for(i in seq_along(vdf)) points(demo_error_A[[i]], demo_error_B[[i]], col = cols[i], pch = 0, cex = 2, lwd = 3)
+## legend("bottom", bty = "n", col = cols[seq_along(vdf)], pch = 0, pt.lwd = 2,
+##        legend = c("Degree", "Betweenness", "Closeness", "Eigenvector"))
 dev.off()

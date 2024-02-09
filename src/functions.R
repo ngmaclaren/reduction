@@ -1,5 +1,5 @@
-library(ROI, lib.loc = "/user/neilmacl/rlocal/")
-library(ROI.plugin.qpoases, lib.loc = "/user/neilmacl/rlocal/")
+library(ROI)#, lib.loc = "/user/neilmacl/rlocal/")
+library(ROI.plugin.qpoases)#, lib.loc = "/user/neilmacl/rlocal/")
 
 lout <- 100 # `L` in the manuscript: the number of samples of the control parameter
 
@@ -237,6 +237,60 @@ experiment <- function(n, y, Y, Ds, maxit = NULL, # angle = FALSE,
 }
 
 ### Monte Carlo functions
+select_by_community <- function(n, g, partition, vs = V(g)) {
+    stopifnot(is.numeric(n))
+    stopifnot(is.igraph(g))
+    stopifnot(inherits(partition, "communities"))
+    
+    stopifnot(length(partition) >= n)
+
+    withheld <- V(g)[-which(V(g) %in% vs)]
+    if(length(withheld) > 0) {
+        available <- V(g)[-withheld]
+    } else {
+        available <- vs
+    }
+    mbr <- membership(partition)
+    S <- c()
+    m <- c()
+
+    while(length(S) < n) {
+        
+        v <- sample(available, 1)
+        S <- c(S, v)
+        m <- c(m, mbr[v])
+        
+        toremove <- unique(c(which(mbr %in% m), as.numeric(withheld)))
+        available <- V(g)[-toremove]
+    }
+
+    return(S)
+}
+
+select_by_comm_prob <- function(n, g, partition, pvec, vs = V(g)) {
+    stopifnot(is.numeric(n))
+    stopifnot(is.igraph(g))
+    stopifnot(inherits(partition, "communities"))
+    stopifnot(length(pvec) == length(partition))
+
+    withheld <- V(g)[-which(V(g) %in% vs)]
+    if(length(withheld) > 0) {
+        available <- V(g)[-withheld]
+    } else {
+        available <- vs
+    }
+    Cs <- seq_len(length(partition))
+    mbr <- membership(partition)
+    
+    C_vec <- sample(Cs, n, TRUE, pvec) # this tells me which communities to take from
+
+    df <- data.frame(v = as.numeric(available), C = as.numeric(mbr[available]))
+
+    sapply(C_vec, function(C) sample(df$v[df$C == C], 1))
+    
+}
+
+
 make_dataset <- function(n, # how many nodes are in the node set
                          ntrials, # how many times should we do the experiment
                          bparam, # the bifurcation parameter values (a sequence)
@@ -247,6 +301,7 @@ make_dataset <- function(n, # how many nodes are in the node set
                          optimize_weights = FALSE, # should weights be optimized?
                          use_connections = FALSE, # should the ks/knns be used to select nodes?
                          use_quantiles = FALSE, # if use_connections, also split into n by quantile?
+                         use_communities = FALSE,
                          verbose = FALSE # for `trace` and `mc.silent`; doesn't seem to do anything
                          ) {
     if(is.numeric(comps)) { # If we have some reference node set to match (e.g. a good node set)
@@ -269,9 +324,13 @@ make_dataset <- function(n, # how many nodes are in the node set
             k <- degree(g)
             knn <- knn(g)$knn
 
-            top10k <- which(k > quantile(k, probs = 0.9))
-            bottom10knn <- which(knn < quantile(knn, probs = 0.1))
-            avail <- as.numeric(V(g)[-unique(c(top10k, bottom10knn))])
+                                        # Effect of knn does not appear to be robust
+            ## top10k <- which(k > quantile(k, probs = 0.9))
+            ## bottom10knn <- which(knn < quantile(knn, probs = 0.1))
+            ## avail <- as.numeric(V(g)[-unique(c(top10k, bottom10knn))])
+                                        # Better results with only eliminating the very largest nodes
+            top5k <- which(k > quantile(k, probs = 0.95))
+            avail <- as.numeric(V(g)[-top5k])
             
             if(use_quantiles) { # impose stratified sampling
                 probwidth <- 1/n
@@ -289,7 +348,19 @@ make_dataset <- function(n, # how many nodes are in the node set
                 )
                 
                 VS <- replicate(ntrials, sapply(bins, sample, 1), simplify = FALSE) # stratified sample
-                
+            } else if(use_communities) {
+                ## partition <- cluster_louvain(g)
+                                        # try with a deterministic algorithm
+                partition <- cluster_fast_greedy(g)
+
+                sizes <- as.numeric(table(membership(partition)))
+                pvec <- sqrt(sizes)/sum(sqrt(sizes))
+
+                VS <- replicate(
+                    ntrials,
+                    as.numeric(select_by_comm_prob(n, g, partition, pvec, avail)),
+                    simplify = FALSE
+                )
             } else {
                 VS <- replicate(ntrials, sample(avail, n), simplify = FALSE) # deg/knn constraints
             }
