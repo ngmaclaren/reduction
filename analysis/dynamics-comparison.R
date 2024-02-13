@@ -21,11 +21,16 @@ args <- parse_args(
 )
 
 if(interactive()) {
-    if(getwd() != "/user/neilmacl/Documents/reduction/analysis") setwd("./analysis")
-    network <- "dolphin"
+    ## if(getwd() != "/user/neilmacl/Documents/reduction/analysis") setwd("./analysis")
+    network <- "ba"
     A.dynamics <- "dw" # "genereg"
     B.dynamics <- "SIS"
-    outfile <- "test.pdf"
+    useall <- "yes" # "no"
+    outfile <- paste0(
+        "../img/dynamics-comparisons/",
+        paste(c(network, A.dynamics, B.dynamics, useall), collapse = "-"),
+        ".pdf"
+    )
 } else {
     network <- args$network
     A.dynamics <- args$dynamicsA
@@ -35,12 +40,14 @@ if(interactive()) {
         paste(c(network, A.dynamics, B.dynamics), collapse = "-"),
         ".pdf"
     )
+    useall <- "no"
 }
 
 library(parallel)
 ncores <- detectCores() - 1
 library(igraph)#, lib.loc = "/user/neilmacl/rlocal")
 library(deSolve)
+library(sfsmisc) # for axis functions
 source("../src/functions.R")
 RNGkind("L'Ecuyer-CMRG")
 
@@ -71,12 +78,12 @@ load(paste0("../data/", network, ".rda"))
 g <- upgrade_graph(get(network))
 k <- degree(g)
 N <- vcount(g)
-vdf <- data.frame(
-    dc = degree(g, normalized = TRUE),
-    bc = betweenness(g, directed = FALSE, normalized = TRUE),
-    cc = closeness(g, normalized = TRUE),
-    ec = eigen_centrality(g, directed = FALSE)$vector
-)
+## vdf <- data.frame(
+##     dc = degree(g, normalized = TRUE),
+##     bc = betweenness(g, directed = FALSE, normalized = TRUE),
+##     cc = closeness(g, normalized = TRUE),
+##     ec = eigen_centrality(g, directed = FALSE)$vector
+## )
 load(paste0("../data/fullstate-", network, ".rda"))
 
 filedir <- "../data/optimized-nodesets/"
@@ -97,9 +104,11 @@ A.y <- rowMeans(fullstate[[A.dynamics]])
 A.bestopt <- A$opt[which.min(get_error(A$opt))][[1]]
 A$fixed <- make_dataset(n, ntrials, A.bparam, A.y, A.Y, comps = A.bestopt$vs)
 A$rand <- make_dataset(n, ntrials, A.bparam, A.y, A.Y)
-A$constr <- make_dataset(n, ntrials, A.bparam, A.y, A.Y, use_connections = TRUE)
-##A$quant <- make_dataset(n, ntrials, A.bparam, A.y, A.Y, use_connections = TRUE, use_quantiles = TRUE)
-A$comm <- make_dataset(n, ntrials, A.bparam, A.y, A.Y, use_connections = TRUE, use_communities = TRUE)
+if(useall == "yes") {
+    A$constr <- make_dataset(n, ntrials, A.bparam, A.y, A.Y, use_connections = TRUE)
+    A$quant <- make_dataset(n, ntrials, A.bparam, A.y, A.Y, use_connections = TRUE, use_quantiles = TRUE)
+    A$comm <- make_dataset(n, ntrials, A.bparam, A.y, A.Y, use_connections = TRUE, use_communities = TRUE)
+}
 
 B <- list(opt = opts[[paste(c(network, B.dynamics), collapse = "_")]])
 B.bparam <- get_bparam(B.dynamics)
@@ -108,10 +117,11 @@ B.y <- rowMeans(fullstate[[B.dynamics]])
 B.bestopt <- B$opt[which.min(get_error(B$opt))][[1]]
 B$fixed <- make_dataset(n, ntrials, B.bparam, B.y, B.Y, comps = B.bestopt$vs)
 B$rand <- make_dataset(n, ntrials, B.bparam, B.y, B.Y)
-B$constr <- make_dataset(n, ntrials, B.bparam, B.y, B.Y, use_connections = TRUE)
-## B$quant <- make_dataset(n, ntrials, B.bparam, B.y, B.Y, use_connections = TRUE, use_quantiles = TRUE)
-B$comm <- make_dataset(n, ntrials, B.bparam, B.y, B.Y, use_connections = TRUE, use_communities = TRUE)
-
+if(useall == "yes") {
+    B$constr <- make_dataset(n, ntrials, B.bparam, B.y, B.Y, use_connections = TRUE)
+    B$quant <- make_dataset(n, ntrials, B.bparam, B.y, B.Y, use_connections = TRUE, use_quantiles = TRUE)
+    B$comm <- make_dataset(n, ntrials, B.bparam, B.y, B.Y, use_connections = TRUE, use_communities = TRUE)
+}
                                         # demonstration node sets
 ## demo_VS <- lapply(vdf, function(cm) order(cm, decreasing = TRUE)[1:n])
 ## demo_error_A <- lapply(demo_VS, function(vs) obj_fn(vs, A.y, A.Y, A.bparam))
@@ -132,19 +142,34 @@ ydf <- data.frame(
 
 xlim <- range(c(unlist(xdf), .9*min(xdf$opt)))#, unlist(demo_error_A)))
 ylim <- range(unlist(ydf))#, unlist(demo_error_B))
+axislabels <- c(
+    dw = "Double-well", SIS = "SIS", genereg = "Gene-regulatory", mutualistic = "Mutualistic species"
+)
+labelsize <- 1.5
 
 pdf(outfile)
 palette("Set 1")
+
+par(mai = c(1.25, 1.25, 0.25, 0.25))
 plot(
-    NULL, xlim = xlim, ylim = ylim, log = "xy",
-    xlab = A.dynamics, ylab = B.dynamics, main = paste(network, "error")
+    NULL, xlim = xlim, ylim = ylim, log = "xy", axes = FALSE,
+    xlab = "", ylab = "" #, main = paste(network, "error")
 )
+eaxis(1, at.small = FALSE, cex.axis = labelsize*.6)
+eaxis(2, at.small = FALSE, cex.axis = labelsize*.6)
+title(xlab = axislabels[A.dynamics], line = 3, cex.lab = labelsize)
+title(ylab = axislabels[B.dynamics], line = 4.5, cex.lab = labelsize)
+box()
 legend(
-    "bottomright", col = 1:5, pch = 1, pt.lwd = 2, bty = "n",
-    legend = c("Optimized", "Fixed-degree", "Random", "Constrained", "Community-based") # "Quantiled"
+    "bottomright", col = seq_along(B), pch = seq_along(B), pt.lwd = 2, bty = "n",
+    legend = switch(
+        useall,
+        yes = c("Optimized", "Fixed-degree", "Random", "Constrained", "Quantiled", "Community-based"),
+        no = c("Optimized", "Fixed-degree", "Random")
+    )
 )
-for(i in seq_along(xdf)) points(xdf[[i]], ydf[[i]], col = adjustcolor(i, .5), pch = 1)
-for(i in seq_along(xdf)) points(mean(xdf[[i]]), mean(ydf[[i]]), col = i, pch = 1, cex = 2, lwd = 3)
+for(i in seq_along(xdf)) points(xdf[[i]], ydf[[i]], col = adjustcolor(i, .6), pch = i, cex = .9, lwd = 1.5)
+for(i in seq_along(xdf)) points(mean(xdf[[i]]), mean(ydf[[i]]), col = i, pch = i, cex = 3, lwd = 3)
 ## points(rep(.9*min(xdf$opt), length(xdf$opt)), oldcomps, col = adjustcolor("black", .5), pch = 4)
 ## points(.9*min(xdf$opt), mean(oldcomps), col = "black", pch = 4, lwd = 3, cex = 2)
 ## placelabel(
@@ -156,4 +181,5 @@ for(i in seq_along(xdf)) points(mean(xdf[[i]]), mean(ydf[[i]]), col = i, pch = 1
 ## for(i in seq_along(vdf)) points(demo_error_A[[i]], demo_error_B[[i]], col = cols[i], pch = 0, cex = 2, lwd = 3)
 ## legend("bottom", bty = "n", col = cols[seq_along(vdf)], pch = 0, pt.lwd = 2,
 ##        legend = c("Degree", "Betweenness", "Closeness", "Eigenvector"))
+
 dev.off()

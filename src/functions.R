@@ -238,6 +238,8 @@ experiment <- function(n, y, Y, Ds, maxit = NULL, # angle = FALSE,
 
 ### Monte Carlo functions
 select_by_community <- function(n, g, partition, vs = V(g)) {
+                                        # This function rejects any node that comes from the same community as a
+                                        # node it has already selected.
     stopifnot(is.numeric(n))
     stopifnot(is.igraph(g))
     stopifnot(inherits(partition, "communities"))
@@ -268,6 +270,8 @@ select_by_community <- function(n, g, partition, vs = V(g)) {
 }
 
 select_by_comm_prob <- function(n, g, partition, pvec, vs = V(g)) {
+                                        # This function selects nodes according to a probability that is
+                                        # proportional to the square root of community size.
     stopifnot(is.numeric(n))
     stopifnot(is.igraph(g))
     stopifnot(inherits(partition, "communities"))
@@ -320,6 +324,7 @@ make_dataset <- function(n, # how many nodes are in the node set
             )
             return(dl) # can exit with this list of optimized node sets
         } else if(use_connections) { # impose degree/knn based constraints
+                                        # NB: sample(..., replace=FALSE) is default
             library(igraph)
             k <- degree(g)
             knn <- knn(g)$knn
@@ -332,7 +337,7 @@ make_dataset <- function(n, # how many nodes are in the node set
             top5k <- which(k > quantile(k, probs = 0.95))
             avail <- as.numeric(V(g)[-top5k])
             
-            if(use_quantiles) { # impose stratified sampling
+            if(use_quantiles) { # impose stratified sampling by degree
                 probwidth <- 1/n
                 probs <- seq(from = 0, to = 1, by = probwidth)
                 quantiles <- quantile(k[avail], probs)
@@ -347,22 +352,22 @@ make_dataset <- function(n, # how many nodes are in the node set
                     quantiles[-length(quantiles)], quantiles[-1], SIMPLIFY = FALSE
                 )
                 
-                VS <- replicate(ntrials, sapply(bins, sample, 1), simplify = FALSE) # stratified sample
-            } else if(use_communities) {
-                ## partition <- cluster_louvain(g)
-                                        # try with a deterministic algorithm
-                partition <- cluster_fast_greedy(g)
+                VS <- replicate(ntrials, sapply(bins, sample, 1), simplify = FALSE) #use_connections & use_quantiles
+            } else if(use_communities) { # impose sampling by community structure
+                partition <- cluster_louvain(g)
+                                        # use a deterministic algorithm for reproducibility
+                ## partition <- cluster_fast_greedy(g)
 
                 sizes <- as.numeric(table(membership(partition)))
                 pvec <- sqrt(sizes)/sum(sqrt(sizes))
 
-                VS <- replicate(
+                VS <- replicate(# use_connections & use_communities 
                     ntrials,
                     as.numeric(select_by_comm_prob(n, g, partition, pvec, avail)),
                     simplify = FALSE
                 )
             } else {
-                VS <- replicate(ntrials, sample(avail, n), simplify = FALSE) # deg/knn constraints
+                VS <- replicate(ntrials, sample(avail, n), simplify = FALSE) # use_connections, but no further
             }
             
         } else {

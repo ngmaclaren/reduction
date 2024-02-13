@@ -67,10 +67,10 @@ generate_nodesets <- function(network, dynamic) {
     fixed <- make_dataset(n, ntrials, bparam, y, Y, comps = bestopt$vs)
     rand <- make_dataset(n, ntrials, bparam, y, Y)
     constr <- make_dataset(n, ntrials, bparam, y, Y, use_connections = TRUE)
-    ## quant <- make_dataset(n, ntrials, bparam, y, Y, use_connections = TRUE, use_quantiles = TRUE)
+    quant <- make_dataset(n, ntrials, bparam, y, Y, use_connections = TRUE, use_quantiles = TRUE)
     comm <- make_dataset(n, ntrials, bparam, y, Y, use_connections = TRUE, use_communities = TRUE)
 
-    return(list(opt = opt, fixed = fixed, rand = rand, constr = constr, comm = comm)) # quant = quant
+    return(list(opt = opt, fixed = fixed, rand = rand, constr = constr, quant = quant, comm = comm)) # 
 }
 
 nodesets <- apply(conds, 1, function(row) generate_nodesets(row[1], row[2]), simplify = FALSE)
@@ -98,7 +98,7 @@ df <- do.call(rbind, allerrors)
 df$network <- factor(df$network)
 df$dynamics <- factor(df$dynamics)
 df$ns.type <- factor(df$ns.type)
-df$ns.type <- relevel(df$ns.type, "opt")
+df$ns.type <- relevel(df$ns.type, "rand")
 
 model.glm <- glm(
     log(error) ~ network + dynamics + ns.type,
@@ -112,27 +112,27 @@ model.aov <- aov(log(error) ~ network + dynamics + ns.type, data = df)
 TukeyHSD(model.aov, "ns.type") # the p-value is already adjusted for multiple comparisons. How? Doesn't say in the docs.
 
 
-## panel it by something. Dynamics?
-palette("Set 1")
-dev.new(width = 16, height = 8)
-par(mfrow = c(2, 2))
-for(i in seq_along(levels(df$dynamics))) {
-    plotdf <- subset(df, dynamics == levels(df$dynamics)[i])
-    means <- aggregate(error ~ network + ns.type, FUN = mean, data = plotdf)
-    plot(
-        x = jitter(as.numeric(plotdf$network), amount = 0.1), xlab = "Network",
-        y = plotdf$error, ylab = "Error",
-        col = adjustcolor(as.numeric(plotdf$ns.type), 0.5), pch = 16, cex = 0.5,
-        axes = FALSE, ylim = c(min(means$error)*.9, max(means$error)*1.05)#log = "y"
-    )
-    points(
-        x = as.numeric(means$network),
-        y = means$error,
-        col = as.numeric(means$ns.type), bg = adjustcolor(as.numeric(means$ns.type), .5), pch = 21, cex = 3
-    )
-    box()
-    axis(1, labels = levels(plotdf$network), at = seq_along(levels(plotdf$network)))
-    axis(2)
-    legend("bottomright", bty = "n", col = seq_along(levels(plotdf$ns.type)), pch = 16,
-           legend = levels(plotdf$ns.type))
-}
+## ## panel it by something. Dynamics?
+## palette("Set 1")
+## dev.new(width = 16, height = 8)
+## par(mfrow = c(2, 2))
+## for(i in seq_along(levels(df$dynamics))) {
+##     plotdf <- subset(df, dynamics == levels(df$dynamics)[i])
+##     means <- aggregate(error ~ network + ns.type, FUN = mean, data = plotdf)
+##     plot(
+##         x = jitter(as.numeric(plotdf$network), amount = 0.1), xlab = "Network",
+##         y = plotdf$error, ylab = "Error",
+##         col = adjustcolor(as.numeric(plotdf$ns.type), 0.5), pch = 16, cex = 0.5,
+##         axes = FALSE, ylim = c(min(means$error)*.9, max(means$error)*1.05)#log = "y"
+##     )
+##     points(
+##         x = as.numeric(means$network),
+##         y = means$error,
+##         col = as.numeric(means$ns.type), bg = adjustcolor(as.numeric(means$ns.type), .5), pch = 21, cex = 3
+##     )
+##     box()
+##     axis(1, labels = levels(plotdf$network), at = seq_along(levels(plotdf$network)))
+##     axis(2)
+##     legend("bottomright", bty = "n", col = seq_along(levels(plotdf$ns.type)), pch = 16,
+##            legend = levels(plotdf$ns.type))
+## }

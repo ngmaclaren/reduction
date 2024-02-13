@@ -13,11 +13,6 @@ load_fullstate <- function(net) {
     return(temp)
 }
 
-get_error <- function(dl) sapply(dl, `[[`, "error")
-## get_vs? _ks?
-
-## this version of generate_nodesets only needs rand, so maybe I can just select randomly without the big function
-## No, I still want it, because it calculates the error
 generate_nodesets <- function(network, dynamic) {
     source("../src/functions.R", local = TRUE)
     ## To do this I need the correct set of bparam values, y, Y, and the network
@@ -113,7 +108,8 @@ get_ns_lcl <- function(net, dyn) {
 
 get_partition <- function(net) {
     g <- upgrade_graph(get(net))
-    ##communities <- cluster_fast_greedy(g)
+                                        # use the deterministic alg for reproducibility
+    ## communities <- cluster_fast_greedy(g)
     communities <- cluster_louvain(g)
     membership(communities)
 }
@@ -186,14 +182,20 @@ allknn <- do.call(rbind, apply(conds, 1, function(row) get_ns_knn(row[1], row[2]
 alllcl <- do.call(rbind, apply(conds, 1, function(row) get_ns_lcl(row[1], row[2]), simplify = FALSE))
 allpairs <- do.call(rbind, apply(conds, 1, function(row) get_pairs_scores(row[1], row[2]), simplify = FALSE))
 
-## Merge not working. Because of the way I made these, I can use cbind.
-df <- cbind(allk, allknn$knn, alllcl$lcl, allpairs$pairs)
-colnames(df) <- c("k", "network", "dynamics", "ns.type", "knn", "lcl", "pairs") # fragile!
-df <- df[, c("network", "dynamics", "ns.type", "k", "knn", "lcl", "pairs")]
+## Merge not working. Because of the way I made these (always respecting igraph's node order), I can use cbind.
+df <- cbind(
+    allk,
+    allknn$knn, alllcl$lcl, allpairs$pairs
+)
+colnames(df) <- c(# fragile! but see that allk is a df, the rest are columns
+    "k", "network", "dynamics", "ns.type",
+    "knn", "lcl", "pairs"
+) 
+df <- df[, c("network", "dynamics", "ns.type", "k", "knn", "lcl", "pairs")] # reorder for convenience
 df$network <- factor(df$network) # celegans is the reference. That's probably ok, as it approximates a BA network
 df$dynamics <- factor(df$dynamics) # dw is the reference. That is ok.
 df$ns.type <- factor(df$ns.type) # opt is the reference. I think I want rand to be the reference
-df$ns.type <- relevel(df$ns.type, "rand")
+df$ns.type <- relevel(df$ns.type, "rand") # make it so
 
 ## Now, the models.
 ## No need for TukeyHSD here because there is only one contrast of interest, between opt and rand.
@@ -231,6 +233,7 @@ mp <- glm(
 )
 mpi <- update(mp, . ~ . + network:ns.type)
 
+## Strangely, the community detection algorithm matters. Louvain algorithm gives a higher diff between rand and opt than Girvan-Newman. 
 lapply(list(k_only = mk, knn = mknn, clustering = mlcl, communities = mp), summary)
 
 lapply(list(k_only = mki, knn = mknni, clustering = mlcli, communities = mpi), summary)

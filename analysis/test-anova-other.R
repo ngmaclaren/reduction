@@ -66,8 +66,9 @@ generate_nodesets <- function(network, dynamic) {
     rand <- make_dataset(n, ntrials, bparam, y, Y)
     constr <- make_dataset(n, ntrials, bparam, y, Y, use_connections = TRUE)
     quant <- make_dataset(n, ntrials, bparam, y, Y, use_connections = TRUE, use_quantiles = TRUE)
+    comm <- make_dataset(n, ntrials, bparam, y, Y, use_connections = TRUE, use_communities = TRUE)
 
-    return(list(opt = opt, fixed = fixed, rand = rand, constr = constr, quant = quant))
+    return(list(opt = opt, fixed = fixed, rand = rand, constr = constr, quant = quant, comm = comm)) # 
 }
 
 nodesets <- apply(optconds, 1, function(row) generate_nodesets(row[1], row[2]), simplify = FALSE)
@@ -117,12 +118,19 @@ df$network <- factor(df$network)
 df$dynamicsA <- factor(df$dynamicsA)
 df$dynamicsB <- factor(df$dynamicsB)
 df$ns.type <- factor(df$ns.type)
-df$ns.type <- relevel(df$ns.type, "opt")
+df$ns.type <- relevel(df$ns.type, "rand")
 
-model.glm <- glm(log(error) ~ network + dynamicsA + dynamicsB + ns.type,
-                 data = subset(df, network %in% empiricals), family = gaussian)
+model.glm <- glm(
+    log(error) ~ network + dynamicsA + dynamicsB + ns.type,
+    data = df,
+    ## data = subset(df, network %in% empiricals),
+    family = gaussian
+)
 summary(model.glm)
 
-model.aov <- aov(log(error) ~ network + dynamicsA + dynamicsB + ns.type,
-                 data = subset(df, network %in% empiricals))
+model.aov <- aov(
+    log(error) ~ network + dynamicsA + dynamicsB + ns.type,
+    data = df
+    ## data = subset(df, network %in% empiricals)
+)
 TukeyHSD(model.aov, "ns.type")

@@ -1,12 +1,12 @@
-if(interactive()) {
-    if(getwd() != "/user/neilmacl/Documents/reduction/analysis/") {
-        setwd("/user/neilmacl/Documents/reduction/analysis/")
-    }
-}
+## if(interactive()) {
+##     if(getwd() != "/user/neilmacl/Documents/reduction/analysis/") {
+##         setwd("/user/neilmacl/Documents/reduction/analysis/")
+##     }
+## }
 
 library(igraph)
 
-network <- "ba"
+network <- "proximity"
 dynamics <- "dw"
 
 filetag <- paste(c(network, dynamics), collapse = "-")
@@ -24,8 +24,8 @@ vs <- sapply(opts, `[[`, "vs")
 ks <- k[vs]
 knns <- knn[vs]
 
-## pdf("k-knn-scatter-test.pdf")
+pdf(paste0("../img/k-knn-scatter-test-", network, ".pdf"))
 plot(k, knn, xlab = "k", ylab = "knn", col = 1, cex = 1, pch = 16)
 points(ks, knns, col = adjustcolor(2, .2), pch = 16, cex = 2)
 legend("topright", bty = "n", col = 1:2, pch = 16, legend = c("Original network", "Optimized node sets"))
-## dev.off()
+dev.off()
