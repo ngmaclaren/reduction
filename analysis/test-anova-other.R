@@ -14,6 +14,8 @@ load_fullstate <- function(net) {
     return(temp)
 }
 
+useall <- "no"
+
 empiricals <- c("dolphin", "celegans", "proximity", "euroroad", "email")
 networks <- c(
     "dolphin", "celegans", "proximity", "euroroad", "email", "er", "gkk", "ba", "hk", "lfr"
@@ -64,11 +66,15 @@ generate_nodesets <- function(network, dynamic) {
 
     fixed <- make_dataset(n, ntrials, bparam, y, Y, comps = bestopt$vs)
     rand <- make_dataset(n, ntrials, bparam, y, Y)
-    constr <- make_dataset(n, ntrials, bparam, y, Y, use_connections = TRUE)
-    quant <- make_dataset(n, ntrials, bparam, y, Y, use_connections = TRUE, use_quantiles = TRUE)
-    comm <- make_dataset(n, ntrials, bparam, y, Y, use_connections = TRUE, use_communities = TRUE)
+    if(useall == "yes") {
+        constr <- make_dataset(n, ntrials, bparam, y, Y, use_connections = TRUE)
+        quant <- make_dataset(n, ntrials, bparam, y, Y, use_connections = TRUE, use_quantiles = TRUE)
+        comm <- make_dataset(n, ntrials, bparam, y, Y, use_connections = TRUE, use_communities = TRUE)
 
-    return(list(opt = opt, fixed = fixed, rand = rand, constr = constr, quant = quant, comm = comm)) # 
+        return(list(opt = opt, fixed = fixed, rand = rand, constr = constr, quant = quant, comm = comm))
+    } else {
+        return(list(opt = opt, fixed = fixed, rand = rand))
+    }
 }
 
 nodesets <- apply(optconds, 1, function(row) generate_nodesets(row[1], row[2]), simplify = FALSE)
@@ -127,10 +133,30 @@ model.glm <- glm(
     family = gaussian
 )
 summary(model.glm)
+CI.glm <- confint(model.glm)
+exp(CI.glm["(Intercept)", ])
+exp(CI.glm["(Intercept)", ] + CI.glm["ns.typeopt", ])
+exp(CI.glm["(Intercept)", ] + CI.glm["ns.typefixed", ])
 
 model.aov <- aov(
     log(error) ~ network + dynamicsA + dynamicsB + ns.type,
     data = df
     ## data = subset(df, network %in% empiricals)
 )
-TukeyHSD(model.aov, "ns.type")
+HSD <- TukeyHSD(model.aov, "ns.type")
+show(HSD)
+
+beta <- coefficients(model.glm)
+
+## mean error for random node sets, across all networks and dynamics (A and B)
+exp(beta[1])
+
+## mean error for optimized node sets
+exp(beta[1] + beta["ns.typeopt"])
+exp(beta[1] + HSD$ns.type["opt-rand", "lwr"])
+exp(beta[1] + HSD$ns.type["opt-rand", "upr"])
+
+## mean error for fixed-degree node sets
+exp(beta[1] + beta["ns.typefixed"])
+exp(beta[1] + HSD$ns.type["fixed-rand", "lwr"])
+exp(beta[1] + HSD$ns.type["fixed-rand", "upr"])
