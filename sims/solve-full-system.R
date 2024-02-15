@@ -1,53 +1,81 @@
+library(optparse)
+optionlist <- list(
+    make_option(
+        "--network", type = "character", default = "dolphin",
+        help = "The network on which to compare each dynamics. Default is %default. Options: 'dolphin', 'celegans', 'proximity', 'euroroad', 'email', 'er', 'gkk', 'ba', 'hk', 'lfr'."
+    )
+)
+args <- parse_args(
+    OptionParser(option_list = optionlist),
+    convert_hyphens_to_underscores = TRUE
+)
+
+if(interactive()) {
+    args$network <- "dolphin"
+}
+
 library(parallel)
+ncores <- detectCores()-1
 library(igraph)
 library(deSolve)
-source("../src/functions.R")
-ncores <- detectCores() - 1 # backed off from max to allow for overflow
+library(localsolver)
 
-args <- commandArgs(trailingOnly = TRUE)
-network <- args[1]
+network <- args$network
 print(network)
-fullstatefile <- paste0("../data/fullstate-", network, ".rda")
+fullstatefile <- paste0("../data/fullstate-", network, ".rds")
 
-load(paste0("../data/", network, ".rda"))
-g <- get(network)
+g <- readRDS(paste0("../data/", network, ".rds"))
 N <- vcount(g)
 A <- as_adj(g, "both", sparse = FALSE)
-k <- degree(g)
-## mutualistic_parms$D.tilde <- N/10
+
+times <- 0:15 # for all? was 0:20 for SIS?
 
 print("solving doublewell...")
 Y.doublewell <- with(
-    doublewell_parms,
-    solve_doublewell(x = rep(x.init, N), r = r, Ds = Ds, A = A)
+    list(
+        params = c(.doublewell, list(A = A)),
+        control = list(times = times, ncores = ncores)
+    ), {
+        solve_in_range(params$Ds, "D", doublewell, rep(params$xinit.low, N), params, control, "ode")
+    }
 )
 
 print("solving SIS...")
 Y.SIS <- with(
-    SIS_parms,
-    solve_SIS(x = rep(x.init, N), μ = μ, Ds = Ds, A = A)
+    list(
+        params = c(.SIS, list(A = A)),
+        control = list(times = times, ncores = ncores)
+    ), {
+        solve_in_range(params$Ds, "D", SIS, rep(params$xinit.low, N), params, control, "ode")
+    }
 )
 
 print("solving gene regulatory...")
 Y.genereg <- with(
-    genereg_parms,
-    solve_genereg(x = rep(x.init, N), B = B, f = f, h = h, Ds = Ds, A = A)
+    list(
+        params = c(.genereg, list(A = A)),
+        control = list(times = times, ncores = ncores)
+    ), {
+        solve_in_range(params$Ds, "D", genereg, rep(params$xinit.high, N), params, control, "ode")
+    }
 )
 
 print("solving mutualistic species...")
 Y.mutualistic <- with(
-    mutualistic_parms,
-    solve_mutualistic(
-        x = rep(x.init, N), B = B, K = K, C = C, Ds = Ds, D.tilde = D.tilde, E = E, H = H, A = A
-    )
+    list(
+        params = c(.mutualistic, list(A = A)),
+        control = list(times = times, ncores = ncores)
+    ),  {
+        solve_in_range(params$Ds, "D", mutualistic, rep(params$xinit.low, N), params, control, "ode")
+    }
 )
 
 fullstate <- list(
-    dw = Y.doublewell,
+    doublewell = Y.doublewell, # a change!
     SIS = Y.SIS,
     genereg = Y.genereg,
     mutualistic = Y.mutualistic
 )
 
 attr(fullstate, "graph") <- g
-save(fullstate, file = fullstatefile)
+saveRDS(fullstate, file = fullstatefile)
