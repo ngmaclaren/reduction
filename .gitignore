@@ -38,3 +38,5 @@ debug/
 # Any plain text files
 *.txt
 
+# R package build checks
+*.Rcheck

@@ -1,0 +1,12 @@
+Package: localsolver
+Version: 0.1-1
+Date: 2024-02-15
+Title: Simulate dynamics on networks
+Author: Neil G. MacLaren [aut, cre]
+Maintainer: Neil G. MacLaren <neil.g.maclaren@gmail.com>
+Imports: stats, parallel, deSolve
+Suggests: igraph
+Description: Simulate dynamics, possibly on networks, using ordinary or stochastic differential equations. Relies on deSolve for ODEs. For SDEs, uses a simple Euler-Maruyama implementation to produce an object like the output from deSolve::ode().
+License: GPL-3
+Encoding: UTF-8
+RoxygenNote: 7.3.1
