@@ -25,28 +25,28 @@ library(ROI.plugin.qpoases)
 #' @export
 calc_obj <- function(z, y) sum((z - y)^2)/(length(y)*mean(y))
 
-#' Compute the reduction of a sample
-#'
-#' Given a set of nodes and the ground truth simulation results, compute either the weighted or unweighted mean state of the sample.
-#' @param vs A sample of nodes (numeric or igraph.vs)
-#' @param y The ground truth mean state
-#' @param Y A matrix
-#' @param Ds The bifurcation parameter. Present for passing arguments inside an optim() call. Can be NULL if the function is used on its own.
-#' @param optimize_weights Logical for whether or not to optimize node weights.
-#' @return The vector of approximated mean states, called `z` in other functions in this package.
-#' 
-#' @export
-reduction.sample <- function(vs, y, Y, Ds,
-                             optimize_weights = FALSE) {
-    Z <- as.matrix(Y[, vs])
-    if(optimize_weights) {
-        w <- quadoptm(vs, y, Y)
-        apply(Z, 1, weighted.mean, w)
-    } else {
-        ##apply(Z, 1, system_state, angle)
-        rowMeans(Z)
-    }
-}
+## #' Compute the reduction of a sample
+## #'
+## #' Given a set of nodes and the ground truth simulation results, compute either the weighted or unweighted mean state of the sample.
+## #' @param vs A sample of nodes (numeric or igraph.vs)
+## #' @param y The ground truth mean state
+## #' @param Y A matrix
+## #' @param Ds The bifurcation parameter. Present for passing arguments inside an optim() call. Can be NULL if the function is used on its own.
+## #' @param optimize_weights Logical for whether or not to optimize node weights.
+## #' @return The vector of approximated mean states, called `z` in other functions in this package.
+## #' 
+## #' @export
+## reduction.sample <- function(vs, y, Y, Ds,
+##                              optimize_weights = FALSE) {
+##     Z <- as.matrix(Y[, vs])
+##     if(optimize_weights) {
+##         w <- quadoptm(vs, y, Y)
+##         apply(Z, 1, weighted.mean, w)
+##     } else {
+##         ##apply(Z, 1, system_state, angle)
+##         rowMeans(Z)
+##     }
+## }
 
 #' Calculate the approximated mean state for a sample of nodes
 #'
@@ -61,11 +61,18 @@ reduction.sample <- function(vs, y, Y, Ds,
 #' 
 #' @seealso [calc_obj()], [reduction.sample()]
 #' @export
-obj_fn <- function(vs, y, Y, Ds, # angle = FALSE,
-                   optimize_weights = FALSE) {
-    z <- reduction.sample(vs, y, Y, Ds, # angle,
-                          optimize_weights)
-    calc_obj(z, y)#, Y)
+                                        # can I eliminate `Ds` from the formals? Maybe with `...`?
+obj_fn <- function(vs, y, Y, Ds, optimize_weights = FALSE, ws = NULL) { 
+    Z <- as.matrix(Y[, vs])
+
+    if(optimize_weights) {
+        if(is.null(ws)) ws <- quadoptm(vs, y, Y)
+        z <- apply(Z, 1, weighted.mean, ws)
+    } else {
+        z <- rowMeans(Z)
+    }
+
+    calc_obj(z, y)
 }
 
 
@@ -116,6 +123,7 @@ update_vs <- function(vs, y, Y, Ds, # angle,
     return(vs)
 }
 
+                                        # I would like to eliminate this function
 #' Select a set of sentinel nodes by optimization
 #'
 #' Using combinatorial simulated annealing, select a set of sentinel nodes. Optionally, optimize node weights.
