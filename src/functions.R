@@ -149,7 +149,7 @@ SIS_parms <- list(
 calc_obj <- function(z, y) sum((z - y)^2)/(lout*mean(y))
 
 ### Optimization
-take_sample <- function(vs, Y) Y[, vs]
+#take_sample <- function(vs, Y) Y[, vs]
 
                                         # Written this way to support using the Kuramoto model,
                                         # which we decided not to do.
@@ -179,7 +179,7 @@ quadoptm <- function(vs, y, Y) {
 
 reduction.sample <- function(vs, y, Y, Ds, # angle = FALSE,
                              optimize_weights = FALSE) {
-    Z <- as.matrix(take_sample(vs, Y))
+    Z <- as.matrix(Y[, vs])#take_sample(vs, Y))
     if(optimize_weights) {
         w <- quadoptm(vs, y, Y)
         apply(Z, 1, weighted.mean, w)
