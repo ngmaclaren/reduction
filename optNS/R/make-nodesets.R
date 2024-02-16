@@ -1,7 +1,5 @@
 ## This is a file for the different kinds of random node selection
 ## They will feed into the make_dataset() function, or be used alone.
-## Each needs to return something like this:
-## return(list(vs = vs[sorting], error = error, ks = ks[sorting]))
 
 ## arguments:
 ## - n, y, Y
@@ -12,12 +10,24 @@
 
 ## how long does quadoptm() take to do once? Is it a problem to do it again (I mean, after optimizing based on weight, is it the same answer every time to give it the same sequence of nodes? Should be.)
 
-## Problem: some of these functions return lists, others return a single node set
-## Solution: all the select_* functions should return a single node set
+#' Functions to select sentinel node sets
+#'
+#' Each of these functions returns a node set along with some additional information. See details.
+#'
+#' @param n The number of nodes to use in the node set.
+#' @param g The network from which the nodes will be drawn. 
+#' @param y The mean state of the nodes on the network at each value of the bifurcation parameter. 
+#' @param Y The state of all nodes at each value of the bifurcation parameter. 
+#' @param optimize_weights Whether or not to optimize node weights by quadratic programming.
+#' @param sorted Whether or not to sort the nodes by degree in the returned list.
+#' @param maxit The default is typically sufficient, but can be set here. 
+#' @param trace Whether or not to observe the progress of optim().
+#' @param comps The node index sequence 
 
                                         # Remove Ds arg?
-select_optimized <- function(n, g, y, Y, Ds, maxit = NULL, optimize_weights = FALSE,
-                             trace = FALSE, sorted = TRUE) {
+select_optimized <- function(n, g, y, Y, #Ds,
+                             optimize_weights = FALSE, sorted = TRUE, 
+                             maxit = NULL, trace = FALSE) {
     if(is.null(maxit)) {
         maxit <- switch(
             optimize_weights+1, # convert from {0, 1} to {1, 2}
@@ -28,14 +38,14 @@ select_optimized <- function(n, g, y, Y, Ds, maxit = NULL, optimize_weights = FA
     k <- degree(g)
     vs <- sample(as.numeric(V(g)), n)
     result <- optim(
-        vs, obj_fn, update_vs, y = y, Y = Y, Ds = Ds, # replace with g?
+        vs, obj_fn, update_vs, y = y, Y = Y,# Ds = Ds, # replace with g?
         optimize_weights = optimize_weights,
         method = "SANN", control = list(trace = trace, maxit = maxit, temp = 10)
     )
 
     vs <- result$par
     
-    make_dl(vs, y, Y, k, optimize_weights, sorted)
+    make_dl(vs, y, Y, k, optimize_weights, sorted = sorted)
 }
 
 #' Fully random node set construction
@@ -48,7 +58,7 @@ select_randomized <- function(n, g, y, Y, optimize_weights = FALSE, sorted = TRU
 
     vs <- sample(as.numeric(V(g)), n)
 
-    make_dl(vs, y, Y, k, optimize_weights, sorted)
+    make_dl(vs, y, Y, k, optimize_weights, sorted = sorted)
 }
 
 ## select_randomly <- function(ntrials, n, N) {
@@ -64,7 +74,7 @@ select_constrained <- function(n, g, y, Y, optimize_weights = FALSE, sorted = TR
 
     vs <- sample(avail, n)
     
-    make_dl(vs, y, Y, k, optimize_weights, sorted)
+    make_dl(vs, y, Y, k, optimize_weights, sorted = sorted)
 }
 
 #' Quantiles of the degree distribtuion
@@ -81,7 +91,7 @@ select_quantiled <- function(n, g, y, Y, optimize_weights = FALSE, sorted = TRUE
 
     probwidth <- 1/n
     probs <- seq(from = 0, to = 1, by = probwidth)
-    quantiles <- quantile(k[avail], probs)
+    quantiles <- quantile(k[avail], probs, names = FALSE)
     bins <- mapply(
         function(x, y) {
             if(x == y) {
@@ -95,7 +105,7 @@ select_quantiled <- function(n, g, y, Y, optimize_weights = FALSE, sorted = TRUE
     
     vs <- sapply(bins, sample, 1)
 
-    make_dl(vs, y, Y, k, optimize_weights, sorted)
+    make_dl(vs, y, Y, k, optimize_weights, sorted = sorted)
 }
 
 select_by_comm_prob <- function(n, g, partition, pvec, vs = V(g)) {
@@ -142,7 +152,7 @@ select_bycommunity <- function(n, g, y, Y, optimize_weights = FALSE, sorted = TR
 
     vs <- as.numeric(select_by_comm_prob(n, g, partition, pvec, avail))
 
-    make_dl(vs, y, Y, k, optimize_weights, sorted)
+    make_dl(vs, y, Y, k, optimize_weights, sorted = sorted)
 }
 
 #' Based on a fixed (usually optimal) degree sequence
@@ -151,15 +161,15 @@ select_bydegseq <- function(n, g, comps, y, Y, optimize_weights = FALSE, sorted 
     k <- degree(g)
     ks <- k[comps]
     poss <- lapply(ks, function(ki) as.numeric(V(g)[which(k == ki)]))
-    vs <- sapply(poss, sample, 1)
+    vs <- sapply(poss, function(vec) if(length(vec) == 1) vec else sample(vec, 1))
 
     make_dl(vs, y, Y, k, optimize_weights, sorted)
 }
 
 
-make_dl <- function(vs, y, Y, bparam, k, optimize_weights = FALSE, ws = NULL, sorted = TRUE) {
+make_dl <- function(vs, y, Y, k, optimize_weights = FALSE, ws = NULL, sorted = TRUE) {
     if(optimize_weights & is.null(ws)) ws <- quadoptm(vs, y, Y)
-    error <- obj_fn(vs, y, Y, bparam, optimize_weights = optimize_weights, ws = ws) 
+    error <- obj_fn(vs, y, Y, optimize_weights = optimize_weights, ws = ws) 
     ks <- degree(g)[vs]
 
     if(sorted) {
