@@ -4,8 +4,9 @@ Date: 2024-02-15
 Title: Select sentinel node sets
 Author: Neil G. MacLaren [aut, cre]
 Maintainer: Neil G. MacLaren <neil.g.maclaren@gmail.com>
-Imports: ROI, ROI.plugin.qpoases
-Suggests:
+Imports: igraph, ROI, ROI.plugin.qpoases
+Suggests: 
 Description: Select sentinel node sets with which to approximate dynamics on networks. Package includes selecting by optimization (combinatorial simulated annealing) as well as random and heuristic algorithms.
 License: GPL-3
 Encoding: UTF-8
+RoxygenNote: 7.3.1
