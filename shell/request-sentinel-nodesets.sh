@@ -3,22 +3,20 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=26
-#SBATCH --mem=100000
-#SBATCH --time=00:15:00
-## For making very large batches
-# #SBATCH --time=04:00:00
+#SBATCH --mem=50000 # check the hardware here. I think it would be better as 100000
 
+# job-name and output go in the top file
 #SBATCH --mail-user=neilmacl@buffalo.edu
-#SBATCH --mail-type=NONE
+#SBATCH --mail-type=ALL
 #SBATCH --partition=general-compute
 #SBATCH --qos=general-compute
 #SBATCH --cluster=ub-hpc
 
 module load gcc openmpi r
 
-# nnodes=$1
-ntrials=$1
-network=$2
-dynamics=$3
+network=$1
+dynamics=$2
+ntrials=$3
+optweights=$4
 
-Rscript ../sims/make-sentinel-nodesets.R --ntrials=${ntrials} --network=${network} --dynamics=${dynamics} # --nnodes=${nnodes} 
+Rscript select-sentinel-nodesets.R --network=$network --dynamics=$dynamics --ntrials=$ntrials --optimize-weights=$optweights

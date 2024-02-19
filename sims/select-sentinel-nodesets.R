@@ -1,0 +1,105 @@
+## This is a file for making all the different kinds of sentinel nodesets I could want.
+## The output file format is ./[network]-[dynamics].rds
+## The output object is a list, the elements of which are "ns.type"
+## Each element is a list, the output of make_dataset(), with elements "vs", "error", "ks", and "ws", with "ws" potentially NULL
+
+## optparse
+library(optparse)
+optionlist <- list(
+    make_option(
+        "--network", type = "character", default = "dolphin",
+        help = "The network on which to compare each dynamics. Default is %default. Options: 'dolphin', 'celegans', 'proximity', 'euroroad', 'email', 'er', 'gkk', 'ba', 'hk', 'lfr'."
+    ),
+    make_option(
+        "--dynamics", type = "character", default = "doublewell",
+        help = "The dynamics on the network. Default is %default. Option: 'doublewell', 'SIS', 'genereg', 'mutualistic'."
+    ),
+    make_option(
+        "--ntrials", type = "integer", default = 3,
+        help = "The number of independent node sets of each type. Default is %default."
+    ),
+    make_option(
+        "--optimize-weights", action = "store_true", default = FALSE,
+        help = "Whether or not to optimize the node weights. Default is %default."
+    )
+)
+args <- parse_args(
+    OptionParser(option_list = optionlist),
+    convert_hyphens_to_underscores = TRUE
+)
+
+if(interactive()) {
+    args$network <- "dolphin"
+    args$dynamics <- "doublewell"
+    args$ntrials <- 3
+    args$optimize_weights <- TRUE # FALSE
+}
+
+## packages
+library(parallel)
+ncores <- detectCores()-1
+library(igraph)
+library(ROI)
+library(ROI.plugin.qpoases)
+library(optNS)
+
+## organize variables
+network <- args$network
+dynamics <- args$dynamics
+ntrials <- as.numeric(args$ntrials)
+optimize_weights <- args$optimize_weights
+
+if(optimize_weights) {
+    cond <- paste(c(network, dynamics, "w"), collapse = "_")
+} else {
+    cond <- paste(c(network, dynamics), collapse = "_")
+}
+print(cond)
+fullstatefile <- paste0("../data/fullstate-", network, ".rds")
+outfile <- paste0("../data/ns-", cond, ".rds")
+
+g <- readRDS(paste0("../data/", network, ".rds"))
+N <- vcount(g)
+A <- as_adj(g, "both", sparse = FALSE)
+
+Y <- readRDS(fullstatefile)[[dynamics]]
+y <- rowMeans(Y)
+n <- floor(log(N))
+
+## main call
+opts <- make_dataset(
+    ntrials = ntrials, ns.type = "opt", ncores = ncores,
+    n = n, g = g, y = y, Y = Y, optimize_weights = optimize_weights
+)
+
+best <- opts[[which.min(get_error(opts))]]
+
+fixeds <- make_dataset(
+    ntrials = ntrials, ns.type = "fixed", ncores = ncores,
+    n = n, g = g, comps = best$vs, y = y, Y = Y, optimize_weights = optimize_weights
+)
+
+rands <- make_dataset(
+    ntrials = ntrials, ns.type = "rand", ncores = ncores,
+    n = n, g = g, y = y, Y = Y, optimize_weights = optimize_weights
+)
+
+constrs <- make_dataset(
+    ntrials = ntrials, ns.type = "constr", ncores = ncores,
+    n = n, g = g, y = y, Y = Y, optimize_weights = optimize_weights
+)
+
+quants <- make_dataset(
+    ntrials = ntrials, ns.type = "quant", ncores = ncores,
+    n = n, g = g, y = y, Y = Y, optimize_weights = optimize_weights
+)
+
+comms <- make_dataset(
+    ntrials = ntrials, ns.type = "comm", ncores = ncores,
+    n = n, g = g, y = y, Y = Y, optimize_weights = optimize_weights
+)
+
+allns <- list(opt = opts, fixed = fixeds, rand = rands, constr = constrs, quant = quants, comm = comms)
+
+## store
+saveRDS(allns, file = outfile)
