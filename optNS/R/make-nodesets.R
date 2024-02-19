@@ -158,7 +158,7 @@ select_bydegseq <- function(n, g, comps, y, Y, optimize_weights = FALSE, sorted 
     poss <- lapply(ks, function(ki) as.numeric(V(g)[which(k == ki)]))
     vs <- sapply(poss, function(vec) if(length(vec) == 1) vec else sample(vec, 1))
 
-    make_dl(vs, g, y, Y, k, optimize_weights, sorted)
+    make_dl(vs, g, y, Y, k, optimize_weights, sorted = sorted)
 }
 
 #' @rdname selector
