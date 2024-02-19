@@ -3,19 +3,17 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=26
-#SBATCH --mem=50000
+#SBATCH --mem=50000 # check the hardware here. I think it would be better as 100000
 
-#SBATCH --job-name=dolphin-demo
-#SBATCH --output=dolphin-demo.out
+# job-name and output go in the top file
 #SBATCH --mail-user=neilmacl@buffalo.edu
 #SBATCH --mail-type=ALL
 #SBATCH --partition=general-compute
 #SBATCH --qos=general-compute
 #SBATCH --cluster=ub-hpc
 
-module load gcc
-module load openmpi
-module load r
+module load gcc openmpi r
 
-Rscript ../sims/dolphin-demo.R
-Rscript ../sims/dolphin-demo.R --optimize-weights
+network=$1
+
+Rscript simulate-full-system.R --network=$network
