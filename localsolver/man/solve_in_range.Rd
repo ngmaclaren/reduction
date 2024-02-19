@@ -42,16 +42,32 @@ Simulate a system of ODEs across a range of a control parameter.
 Solves an ODE or SDE across a range of parameter values. If `kind = "ode"`, requires deSolve.
 }
 \examples{
+library(stats)
+library(deSolve)
+library(localsolver)
+
+## Generate an adjacency matrix
+library(igraph)
+g <- largest_component(sample_gnm(10, 20, directed = FALSE, loops = FALSE))
+A <- as_adj(g, "both", sparse = FALSE)
+N <- vcount(g)
+
+## solve_in_range() assumes mclapply() is available, so may not work on Windows
 library(parallel)
 ncores <- detectCores()-1
-library(igraph)
-library(deSolve)
-g <- readRDS("../data/dolphin.rds")
-N <- vcount(g)
-A <- as_adj(g, "both", sparse = FALSE)
-k <- degree(g)
-times <- 0:15
+
 params <- c(.doublewell, list(A = A))
-control <- list(times = times, ncores = ncores)
-X <- solve_in_range(params$Ds, "D", doublewell, rep(params$xinit.low, N), params, control, "ode")
+params$sigma <- 0.1
+
+control <- list(times = 0:10, deltaT = 0.01, ncores = ncores)
+simtimes <- seq(control$times[1], control$times[length(control$times)], by = control$deltaT) # for comparison between ode() and sde()
+
+X.ode <- solve_in_range(params$Ds, "D", doublewell, rep(params$xinit.low, N), params, control, "ode")
+X.sde <- solve_in_range(params$Ds, "D", doublewell, rep(params$xinit.low, N), params, control, "sde")
+
+xlim <- range(params$Ds)
+ylim <- range(c(X.ode, X.sde))
+
+matplot(params$Ds, X.ode, xlim = xlim, ylim = ylim, xlab = "D", ylab = "x", lty = 1, col = 1, lwd = 1, type = "l")
+matlines(params$Ds, X.sde, lty = 1, col = 2, lwd = 1)
 }
