@@ -40,6 +40,7 @@ calc_obj <- function(z, y) sum((z - y)^2)/(length(y)*mean(y))
 #' @param Y A matrix
 #' @param optimize_weights Logical for whether or not to optimize node weights.
 #' @param ws A vector of node weights, if already obtained
+#' @param ... Container for arguments passed from optim()
 #' 
 #' @return A numeric vector of approximated system states at each value of the bifurcation parameter
 #' 

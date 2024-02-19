@@ -4,7 +4,7 @@
 \alias{obj_fn}
 \title{Calculate the approximated mean state for a sample of nodes}
 \usage{
-obj_fn(vs, y, Y, optimize_weights = FALSE, ws = NULL)
+obj_fn(vs, y, Y, optimize_weights = FALSE, ws = NULL, ...)
 }
 \arguments{
 \item{vs}{A sample of nodes (numeric or igraph.vs)}
