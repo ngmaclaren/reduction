@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=26
-#SBATCH --mem=50000 # check the hardware here. I think it would be better as 100000
+#SBATCH --mem=100000 # check the hardware here. I think it would be better as 100000
 
 # job-name and output go in the top file
 #SBATCH --mail-user=neilmacl@buffalo.edu
@@ -19,4 +19,4 @@ dynamics=$2
 ntrials=$3
 optweights=$4
 
-Rscript select-sentinel-nodesets.R --network=$network --dynamics=$dynamics --ntrials=$ntrials --optimize-weights=$optweights
+Rscript ../sims/select-sentinel-nodesets.R --network=$network --dynamics=$dynamics --ntrials=$ntrials --optimize-weights=$optweights

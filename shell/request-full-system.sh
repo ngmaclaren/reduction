@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=26
-#SBATCH --mem=50000 # check the hardware here. I think it would be better as 100000
+#SBATCH --mem=100000 # check the hardware here. I think it would be better as 100000
 
 # job-name and output go in the top file
 #SBATCH --mail-user=neilmacl@buffalo.edu
@@ -16,4 +16,4 @@ module load gcc openmpi r
 
 network=$1
 
-Rscript simulate-full-system.R --network=$network
+Rscript ../sims/simulate-full-system.R --network=$network

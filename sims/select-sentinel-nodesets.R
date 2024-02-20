@@ -19,8 +19,8 @@ optionlist <- list(
         help = "The number of independent node sets of each type. Default is %default."
     ),
     make_option(
-        "--optimize-weights", action = "store_true", default = FALSE,
-        help = "Whether or not to optimize the node weights. Default is %default."
+        "--optimize-weights", type = "character", default = "false",
+        help = "Whether or not to optimize the node weights. Default is %default, set to 'true' or 'false'."
     )
 )
 args <- parse_args(
@@ -47,7 +47,7 @@ library(optNS)
 network <- args$network
 dynamics <- args$dynamics
 ntrials <- as.numeric(args$ntrials)
-optimize_weights <- args$optimize_weights
+optimize_weights <- as.logical(toupper(args$optimize_weights))
 
 if(optimize_weights) {
     cond <- paste(c(network, dynamics, "w"), collapse = "_")
