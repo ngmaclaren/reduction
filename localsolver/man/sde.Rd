@@ -27,9 +27,59 @@ Simulate stochastic differential equations using the Euler-Maruyama method. Outp
 Returns a data frame that looks like deSolve's ode() output: a column of time steps, then a column of values at each timestep for each variable in the model.
 }
 \examples{
-library(igraph)
-g <- sample_gnm(10, 20)
-N <- vcount(g)
-A <- as_adj(g, "both", sparse = FALSE)
-X <- sde(rep(.doublewell$xinit.low, N), 0:10, doublewell, c(.doublewell, list(A = A)), list(deltaT = 0.01))
+library(stats)
+library(deSolve)
+library(localsolver)
+
+.growth <- list(xinit = 0.1, r = 1, K = 5, sigma = 0.1) # Set some parameters
+growth <- function(t, x, params) { # A function returning a derivative
+    with(params, {# r, K
+        dx <- r*x*(1 - (x/K))
+        return(list(dx))
+   })
+}
+control <- list(times = 0:10, deltaT = 0.01)
+simtimes <- seq(control$times[1], control$times[length(control$times)], by = control$deltaT) # for comparison between ode() and sde()
+
+x.ode <- ode(.growth$xinit, simtimes, growth, .growth)
+x.sde <- sde(.growth$xinit, control$times, growth, .growth, control)
+
+plot(x.ode[, 1], x.ode[, 2], type = "l", xlab = "Time", ylab = "x")
+lines(x.sde[, 1], x.sde[, 2], type = "l", col = 2)
+
+
+.Brownian1D <- list(xinit = 0, mu = 0, sigma = 1e-1)
+Brownian1D <- function(t, x, params) {
+    with(params, {
+        dx <- mu*x
+        return(list(dx))
+    })
+}
+
+.Brownian2D <- list(xinit = c(y = 0, z = 0), mu = 0, sigma = 1e-1, N = 1, nstatevars = 2)
+Brownian2D <- function(t, x, params) {
+    with(params, {
+        y <- x[1:N]
+        z <- x[(N+1):(2*N)]
+
+        dy <- mu*y
+        dz <- mu*z
+        return(list(dy, dz))
+    })
+}
+
+x <- sde(.Brownian1D$xinit, control$times, Brownian1D, .Brownian1D, control)
+plot(x[, 1], x[, 2], type = "l", xlab = "Time", ylab = "x")
+
+res <- sde(.Brownian2D$xinit, control$times, Brownian2D, .Brownian2D, control)
+
+matplot(res[, 1], res[, 2:3], type = "l", lty = 1, col = 1, lwd = 1, xlab = "Time", ylab = "x")
+
+xlim <- ylim <- c(-max(res[, 2:3]), max(res[, 2:3]))
+plot(NULL, xlim = xlim, ylim = ylim, xlab = "x", ylab = "y")
+abline(h = 0, lwd = 0.5)
+abline(v = 0, lwd = 0.5)
+lines(res[, 2], res[, 3])
+points(res[1, 2], res[1, 3], col = 3, pch = 16, cex = 2) # starting point
+points(res[nrow(res), 2], res[nrow(res), 3], col = 2, pch = 16, cex = 2) # stopping point
 }
