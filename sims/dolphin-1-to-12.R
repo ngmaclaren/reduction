@@ -19,4 +19,4 @@ opts <- lapply(ns, function(n) {
     )
 })
 
-saveRDS(opts, file = "./data/dolphin-1-to-12.rds")
+saveRDS(opts, file = "../data/dolphin-1-to-12.rds")

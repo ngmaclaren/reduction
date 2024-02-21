@@ -19,4 +19,4 @@ opts <- lapply(ns, function(n) {
     )
 })
 
-saveRDS(opts, file = "./data/ba-4.rds")
+saveRDS(opts, file = "../data/ba-4.rds")
