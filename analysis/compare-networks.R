@@ -2,6 +2,8 @@ library(latex2exp)
 library(sfsmisc)
 get_error <- optNS::get_error
 
+save_plots <- TRUE # FALSE
+
 dynamics <- "doublewell"
 
 networks <- c(
@@ -31,8 +33,8 @@ plotit <- function(dl, panellabel = "", xlab = "", ylab = "") { # list of errors
     ht <- 2
     wd <- 7
     amnt <- 0.05
-    alpha <- 1
-    ptcex <- 0.75
+    alpha <- 0.85
+    ptcex <- 1
     ylim <- c(.5, 1.5)
     xlim <- range(c(re, fe, oe))
     ypos <- 1 + c(.15, 0, -.15)
@@ -43,22 +45,28 @@ plotit <- function(dl, panellabel = "", xlab = "", ylab = "") { # list of errors
     )
     points(
         oe, jitter(rep(ypos[1], length(oe)), amount = amnt),
-        col = adjustcolor(1, alpha.f = alpha), pch = 19, cex = ptcex
+        col = adjustcolor(1, alpha.f = alpha), pch = 1, cex = ptcex
     )
     points(
         fe, jitter(rep(ypos[2], length(fe)), amount = amnt),
-        col = adjustcolor(2, alpha.f = alpha), pch = 19, cex = ptcex
+        col = adjustcolor(2, alpha.f = alpha), pch = 2, cex = ptcex
     )
     points(
         re, jitter(rep(ypos[3], length(re)), amount = amnt),
-        col = adjustcolor(3, alpha.f = alpha), pch = 19, cex = ptcex
+        col = adjustcolor(3, alpha.f = alpha), pch = 3, cex = ptcex
     )
 }
 
 labelsize <- 1.75
 ht <- 10
 wd <- 10
-dev.new(height = ht, width = wd)
+
+if(save_plots) {
+    pdf(imgfile, height = ht, width = wd)
+} else {
+    dev.new(height = ht, width = wd)
+}
+
 par(mfcol = c(length(networks)/2, 2), mar = c(2, 2, 0.25, 2)+0.75)
 for(i in seq_along(networks)) {
     plotit(allerrors[[i]])
@@ -66,8 +74,10 @@ for(i in seq_along(networks)) {
     placelabel(paste0("(", letters[i], ")"), 0.01, 0.99, adj = c(0, 1), cex = labelsize)
     if(i == 1) {
         legend(
-            "topright", bty = "n", col = 1:3, pch = 19, pt.cex = 1.5, cex = 1.5,
+            "topright", bty = "n", col = 1:3, pch = 1:3, pt.cex = 1.5, cex = 1.5, pt.lwd = 2,
             legend = c("Optimized", "Degree-preserving random", "Completely random")
         )
     }
 }
+
+if(save_plots) dev.off()

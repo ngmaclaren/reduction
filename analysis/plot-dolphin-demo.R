@@ -1,5 +1,7 @@
 load("dolphin-demo.RData")
 
+save_plots <- TRUE # FALSE
+
 library(latex2exp)
 placelabel <- function(label, x, y, ...) {
     xlim <- par("usr")[1:2]
@@ -24,11 +26,17 @@ legendtext <- c("Node states", "System state", "Approximation", "Selected nodes"
 
 ht <- 12
 wd <- 9
+labelsize <- 2
 ## palette("Set 1")
 palette("Tableau 10")
-dev.new(height = ht, width = wd)
+
+if(save_plots) {
+    pdf("../img/dolphin-demo.pdf", height = 12, width = wd)
+} else {
+    dev.new(height = ht, width = wd)
+}
+
 par(mfrow = c(3, 2), mar = c(5, 5, 1, 1))
-labelsize <- 2
 
 plot_ns <- function(Ds, Y, color, labelsize) {
     matplot(
@@ -69,3 +77,5 @@ plot_ns(Ds, Y, colors$nodestates, labelsize)
 lines(Ds, DART.obs, lty = 1, lwd = 8, col = colors$systemstate)
 lines(Ds, DART[, 1], lty = 1, lwd = 8, col = colors$DART)
 placelabel(paste0("(", letters[6], ")"), 0.01, 0.99, adj = c(0, 1), cex = labelsize)
+
+if(save_plots) dev.off()
