@@ -24,7 +24,7 @@ eaxis(2, n.axp = 1, cex.axis = labelsize)
 title(xlab = "n", cex.lab = labelsize)
 title(ylab = "Kullback-Leibler divergence", line = 4, cex.lab = labelsize) 
 points(seq(12), KLs.opts, col = 1, pch = 16, cex = 3)
-points(seq(12), colMeans(KLs.rands), col = 2, pch = 16, cex = 3)
+points(seq(12), colMeans(KLs.rands), col = 2, pch = 15, cex = 3)
 segments(
     x0 = seq(12),
     y0 = apply(KLs.rands, 2, quantile, probs = 0.025),
@@ -39,7 +39,7 @@ eaxis(2, n.axp = 1, cex.axis = labelsize)
 title(xlab = "n", cex.lab = labelsize)
 title(ylab = "Approximation error", line = 4, cex.lab = labelsize)
 points(seq(12), colMeans(errors.opts), col = 1, pch = 16, cex = 3)
-points(seq(12), colMeans(errors.rands), col = 2, pch = 16, cex = 3)
+points(seq(12), colMeans(errors.rands), col = 2, pch = 15, cex = 3)
 segments(
     x0 = seq(12),
     y0 = apply(errors.rands, 2, quantile, probs = 0.025),
