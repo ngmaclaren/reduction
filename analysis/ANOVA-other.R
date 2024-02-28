@@ -2,7 +2,7 @@
 library(parallel)
 ncores <- detectCores()-1
 
-useall <- "no" # "yes"
+useall <- "yes" # "no"
 useweights <- "no" # "yes"
 weightsflag <- switch(useweights, no = FALSE, yes = TRUE)
 
@@ -73,3 +73,15 @@ summary(model.glm)
 
 model.aov <- aov(log(error) ~ network + dynamicsA + dynamicsB + ns.type, data = df)
 TukeyHSD(model.aov, "ns.type")
+
+
+pdiff <- function(m) {
+    x <- coefficients(m)
+    b <- x
+    b[-1] <- x[1] + x[-1]
+    b <- exp(b)
+    ((b[-1]/b[1])*100) - 100
+}
+
+## sapply(modellist, pdiff)
+as.data.frame(pdiff(model.glm))

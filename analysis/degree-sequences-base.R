@@ -37,11 +37,12 @@ if(save_plots) {
 } else {
     dev.new(height = ht, width = wd)
 }
-par(mfcol = c(5, 2), mar = c(4, 4, 2, 0) + 0.5)
+par(mfcol = c(5, 2), mar = c(4, 4, 2, 1) + 0.5)
                                         # Dolphin
 barplot(table(dolphin.k), names.arg = dolphin.kposs, col = "gray60",
         cex.axis = labelsize, cex.names = labelsize, cex.lab = labelsize,
         xlab = "", ylab = "Frequency")
+mtext("(a)", line = 0.4, adj = -0.05, cex = labelsize)
 for(i in 1:3) {
     barplot(dolphin.data[[i]], names.arg = dolphin.kposs, col = seq_len(nrow(dolphin.data[[i]])),
             cex.axis = labelsize, cex.names = labelsize, cex.lab = labelsize,
@@ -54,6 +55,7 @@ barplot(dolphin.data[[4]], names.arg = dolphin.kposs, col = seq_len(nrow(dolphin
 barplot(sapply(ba.kposs, function(k) sum(ba.k == k)), names.arg = ba.kposs, col = "gray60",
         cex.axis = labelsize, cex.names = labelsize, cex.lab = labelsize,
         xlab = "", ylab = "")
+mtext("(b)", line = 0.4, adj = -0.05, cex = labelsize)
 for(i in 1:3) {
     barplot(ba.data[[i]], names.arg = ba.kposs, col = seq_len(nrow(ba.data[[i]])),
             cex.axis = labelsize, cex.names = labelsize, cex.lab = labelsize,

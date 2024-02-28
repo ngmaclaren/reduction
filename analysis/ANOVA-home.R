@@ -43,10 +43,38 @@ df$ns.type <- relevel(df$ns.type, "rand")
 
 model.glm <- glm(
     log(error) ~ network + dynamics + ns.type,
-    data = df,
+    data = subset(df, network != "er"),
     family = gaussian
 )
 summary(model.glm)
 
-model.aov <- aov(log(error) ~ network + dynamics + ns.type, data = df)
+model.lm <- lm(
+    log(error) ~ network + dynamics + ns.type,
+    data = subset(df, network != "er")
+)
+anova(model.lm)
+
+model.aov <- aov(log(error) ~ network + dynamics + ns.type, data = subset(df, network != "er"))
 TukeyHSD(model.aov, "ns.type")
+
+
+                                        # avg for opt
+b.opt <- exp(coefficients(model.glm)["(Intercept)"] + coefficients(model.glm)["ns.typeopt"])
+                                        # avg for degree-preserving
+b.fixed <- exp(coefficients(model.glm)["(Intercept)"] + coefficients(model.glm)["ns.typefixed"])
+                                        # avg for random
+b.rand <- exp(coefficients(model.glm)["(Intercept)"])
+
+1 - (b.rand - b.fixed)/b.rand
+1 - (b.rand - b.opt)/b.rand
+
+pdiff <- function(m) {
+    x <- coefficients(m)
+    b <- x
+    b[-1] <- x[1] + x[-1]
+    b <- exp(b)
+    ((b[-1]/b[1])*100) - 100
+}
+
+## sapply(modellist, pdiff)
+as.data.frame(pdiff(model.glm))

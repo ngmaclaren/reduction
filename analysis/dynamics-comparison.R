@@ -2,8 +2,8 @@ library(sfsmisc)
 library(optNS)
 
 save_plots <- TRUE # FALSE
-useall <- "no" # "yes"
-useweights <- "no" # "yes"
+useall <- "yes" # "no"
+useweights <- "yes" # "no"
 
 A.dynamics <- "doublewell"
 B.dynamics <- "SIS"
@@ -31,7 +31,8 @@ legendtext <- c("Optimized", "Degree-preserving", "Random", "Constrained", "Quan
 
 ht <- 7
 wd <- 14
-palette("Set 1")
+## palette("Set 1")
+palette("Tableau 10")
 labelsize <- 1.5
 
 if(save_plots) {

@@ -40,3 +40,8 @@ debug/
 
 # R package build checks
 *.Rcheck
+
+
+*.svg
+*.ods
+*.odt

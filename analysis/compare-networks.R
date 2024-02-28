@@ -4,7 +4,7 @@ get_error <- optNS::get_error
 
 save_plots <- TRUE # FALSE
 
-dynamics <- "doublewell"
+dynamics <- "mutualistic" # doublewell SIS genereg mutualistic
 
 networks <- c(
     "dolphin", "celegans", "proximity", "euroroad", "email", "er", "ba", "hk", "gkk", "lfr"
@@ -37,7 +37,7 @@ plotit <- function(dl, panellabel = "", xlab = "", ylab = "") { # list of errors
     ptcex <- 1
     ylim <- c(.5, 1.5)
     xlim <- range(c(re, fe, oe))
-    ypos <- 1 + c(.15, 0, -.15)
+    ypos <- 1 + c(.25, 0, -.25)
     plot(
         NULL,
         xlim = xlim, ylim = ylim, log = "x",
@@ -59,7 +59,7 @@ plotit <- function(dl, panellabel = "", xlab = "", ylab = "") { # list of errors
 
 labelsize <- 1.75
 ht <- 10
-wd <- 10
+wd <- 12
 
 if(save_plots) {
     pdf(imgfile, height = ht, width = wd)
@@ -67,10 +67,12 @@ if(save_plots) {
     dev.new(height = ht, width = wd)
 }
 
-par(mfcol = c(length(networks)/2, 2), mar = c(2, 2, 0.25, 2)+0.75)
+par(mfcol = c(length(networks)/2, 2), mar = c(2, .5, .5, .5))
 for(i in seq_along(networks)) {
     plotit(allerrors[[i]])
-    eaxis(1, axTicks(1)[c(TRUE, FALSE)], cex.axis = labelsize, at.small = FALSE, sub10 = "10")
+    ##eaxis(1, axTicks(1)[c(TRUE, FALSE)], cex.axis = labelsize, at.small = FALSE, sub10 = "10")
+    box()
+    eaxis(1, n.axp = 1, cex.axis = labelsize)
     placelabel(paste0("(", letters[i], ")"), 0.01, 0.99, adj = c(0, 1), cex = labelsize)
     if(i == 1) {
         legend(

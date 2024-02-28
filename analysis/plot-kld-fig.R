@@ -14,7 +14,7 @@ if(save_plots) {
     dev.new(height = ht, width = wd)
 }
 
-par(mar = c(5, 5.5, 1, 0.5), mfrow = c(1, 2))
+par(mar = c(4.5, 5.5, 1.5, 0.5), mfrow = c(1, 2))
 xlim <- c(1, 12)
 
 ylim <- range(c(as.numeric(KLs.rands), KLs.opts))
@@ -22,7 +22,8 @@ plot(NULL, xlim = xlim, ylim = ylim, xlab = "", ylab = "", xaxt = "n", yaxt = "n
 eaxis(1, cex.axis = labelsize)
 eaxis(2, n.axp = 1, cex.axis = labelsize)
 title(xlab = "n", cex.lab = labelsize)
-title(ylab = "Kullback-Leibler divergence", line = 4, cex.lab = labelsize) 
+title(ylab = "Kullback-Leibler divergence", line = 4, cex.lab = labelsize)
+mtext("(a)", line = 0.2, adj = -0.1, cex = labelsize)
 points(seq(12), KLs.opts, col = 1, pch = 16, cex = 3)
 points(seq(12), colMeans(KLs.rands), col = 2, pch = 15, cex = 3)
 segments(
@@ -38,6 +39,7 @@ eaxis(1, cex.axis = labelsize)
 eaxis(2, n.axp = 1, cex.axis = labelsize)
 title(xlab = "n", cex.lab = labelsize)
 title(ylab = "Approximation error", line = 4, cex.lab = labelsize)
+mtext("(b)", line = 0.2, adj = -0.1, cex = labelsize)
 points(seq(12), colMeans(errors.opts), col = 1, pch = 16, cex = 3)
 points(seq(12), colMeans(errors.rands), col = 2, pch = 15, cex = 3)
 segments(

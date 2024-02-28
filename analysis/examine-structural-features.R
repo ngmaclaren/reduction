@@ -2,7 +2,7 @@ library(parallel)
 ncores <- detectCores()-1
 library(igraph)
 
-useall <- "no" # "yes"
+useall <- "no" # "yes"    # If no, only opt and rand
 useweights <- "no" # "yes"
 weightsflag <- switch(useweights, no = FALSE, yes = TRUE)
 
@@ -48,7 +48,7 @@ networks <- c( # only the empirical networks
 )
 graphlist <- lapply(networks, function(network) readRDS(paste0("../data/", network, ".rds")))
 dynamics <- c("doublewell", "SIS", "mutualistic", "genereg")
-ns.types <- c("opt", "fixed", "rand", "constr", "quant", "comm")[switch(useall, no = 1:3, yes = 1:6)]
+ns.types <- c("opt", "fixed", "rand", "constr", "quant", "comm")[switch(useall, no = c(1, 3), yes = 1:6)]
 conds <- expand.grid(networks, dynamics, ns.types, stringsAsFactors = FALSE)
 colnames(conds) <- c("networks", "dynamics", "ns.type")
 nslistnames <- apply(conds[, 1:2], 1, paste, collapse = "_")
@@ -113,6 +113,19 @@ mp <- glm(
 )
 mpi <- update(mp, . ~ . + network:ns.type)
 
-lapply(list(k_only = mk, knn = mknn, clustering = mlcl, communities = mp), summary)
-lapply(list(k_only = mki, knn = mknni, clustering = mlcli, communities = mpi), summary)
-    
+## Model summaries, perhaps to place in the SI
+modellist <- list(k = mk, knn = mknn, clustering = mlcl, communities = mp)
+lapply(modellist, summary)
+lapply(list(k = mki, knn = mknni, clustering = mlcli, communities = mpi), summary)
+
+
+## percent differences
+pdiff <- function(m) {
+    x <- coefficients(m)
+    b <- x
+    b[-1] <- x[1] + x[-1]
+    if(family(m)$link == "log") b <- exp(b)
+    ((b[-1]/b[1])*100) - 100
+}
+
+sapply(modellist, pdiff)
