@@ -15,10 +15,10 @@
 #' @seealso [select_optimized()]
 #' @export
 make_dataset <- function(ntrials,
-                         ns.type = c("opt", "rand", "fixed", "constr", "quant", "comm"),
+                         ns.type = c("opt", "rand", "fixed", "constr", "quant", "comm", "knnconstr"),
                          ncores = 1,
                          ...) {
-    ns.type <- match.arg(ns.type) # don't remember how to do this
+    ns.type <- match.arg(ns.type)
 
     selector <- switch(
         ns.type,
@@ -27,7 +27,8 @@ make_dataset <- function(ntrials,
         fixed = select_bydegseq,
         constr = select_constrained,
         quant = select_quantiled,
-        comm = select_bycommunity
+        comm = select_bycommunity,
+        knnconstr = select_knn_constrained
     )
 
     with(list(args = list(...)), {

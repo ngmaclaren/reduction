@@ -75,6 +75,26 @@ select_constrained <- function(n, g, y, Y, optimize_weights = FALSE, sorted = TR
 
 #' @rdname selector
 #' @export
+select_knn_constrained <- function(n, g, y, Y, optimize_weights = FALSE, sorted = TRUE, constrain = TRUE) {
+    k <- degree(g)
+    knn <- knn(g)$knn
+    bottom5knn <- which(knn < quantile(knn, probs = 0.05))
+    
+    if(constrain) {
+        top5k <- which(k > quantile(k, probs = 0.95))
+        avail <- as.numeric(V(g)[-unique(c(top5k, bottom5knn))])
+    } else {
+        avail <- as.numeric(V(g)[-bottom5knn])
+    }
+
+    vs <- sample(avail, n)
+
+    make_dl(vs, g, y, Y, k, optimize_weights, sorted = sorted)
+}
+    
+
+#' @rdname selector
+#' @export
 select_quantiled <- function(n, g, y, Y, optimize_weights = FALSE, sorted = TRUE, constrain = TRUE) {
     k <- degree(g)
     
