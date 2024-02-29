@@ -1,6 +1,13 @@
 optim <- stats::optim
 quantile <- stats::quantile
 
+sample.local <- function(x, ...) {
+    ## sample() can have surprising behavior when sample(x, ...) and x can have varying lengths
+    ## this function should remove that surprise
+    ## see the example in ?sample
+    x[sample.int(length(x), ...)]
+}
+
 #' Functions to select sentinel node sets
 #'
 #' Each of these functions returns a node set along with some additional information. See details.
@@ -28,7 +35,7 @@ NULL
 
 #' @rdname selector
 #' @export
-select_optimized <- function(n, g, y, Y, #Ds,
+select_optimized <- function(n, g, y, Y,
                              optimize_weights = FALSE, sorted = TRUE, 
                              maxit = NULL, trace = FALSE) {
     if(is.null(maxit)) {
@@ -39,7 +46,7 @@ select_optimized <- function(n, g, y, Y, #Ds,
     }
 
     k <- degree(g)
-    vs <- sample(as.numeric(V(g)), n)
+    vs <- sample.local(as.numeric(V(g)), n)
     result <- optim(
         par = vs, fn = obj_fn, gr = update_vs, g = g, y = y, Y = Y,
         optimize_weights = optimize_weights,
@@ -56,7 +63,7 @@ select_optimized <- function(n, g, y, Y, #Ds,
 select_randomized <- function(n, g, y, Y, optimize_weights = FALSE, sorted = TRUE) {
     k <- degree(g)
 
-    vs <- sample(as.numeric(V(g)), n)
+    vs <- sample.local(as.numeric(V(g)), n)
 
     make_dl(vs, g, y, Y, k, optimize_weights, sorted = sorted)
 }
@@ -68,7 +75,7 @@ select_constrained <- function(n, g, y, Y, optimize_weights = FALSE, sorted = TR
     top5k <- which(k > quantile(k, probs = 0.95))
     avail <- as.numeric(V(g)[-top5k])
 
-    vs <- sample(avail, n)
+    vs <- sample.local(avail, n)
     
     make_dl(vs, g, y, Y, k, optimize_weights, sorted = sorted)
 }
@@ -87,7 +94,7 @@ select_knn_constrained <- function(n, g, y, Y, optimize_weights = FALSE, sorted 
         avail <- as.numeric(V(g)[-bottom5knn])
     }
 
-    vs <- sample(avail, n)
+    vs <- sample.local(avail, n)
 
     make_dl(vs, g, y, Y, k, optimize_weights, sorted = sorted)
 }
@@ -119,7 +126,7 @@ select_quantiled <- function(n, g, y, Y, optimize_weights = FALSE, sorted = TRUE
         quantiles[-length(quantiles)], quantiles[-1], SIMPLIFY = FALSE
     )
     
-    vs <- sapply(bins, sample, 1)
+    vs <- sapply(bins, sample.local, 1)
 
     make_dl(vs, g, y, Y, k, optimize_weights, sorted = sorted)
 }
@@ -141,11 +148,11 @@ select_by_comm_prob <- function(n, g, partition, pvec, vs = V(g)) {
     Cs <- seq_len(length(partition))
     mbr <- membership(partition)
     
-    C_vec <- sample(Cs, n, TRUE, pvec) # this tells me which communities to take from
+    C_vec <- sample.local(Cs, size = n, replace = TRUE, prob = pvec) # this tells me which communities to take from
 
     df <- data.frame(v = as.numeric(available), C = as.numeric(mbr[available]))
 
-    sapply(C_vec, function(C) sample(df$v[df$C == C], 1))
+    sapply(C_vec, function(C) sample.local(df$v[df$C == C], 1))
     
 }
 
@@ -176,7 +183,8 @@ select_bydegseq <- function(n, g, comps, y, Y, optimize_weights = FALSE, sorted 
     k <- degree(g)
     ks <- k[comps]
     poss <- lapply(ks, function(ki) as.numeric(V(g)[which(k == ki)]))
-    vs <- sapply(poss, function(vec) if(length(vec) == 1) vec else sample(vec, 1))
+    ## vs <- sapply(poss, function(vec) if(length(vec) == 1) vec else sample(vec, 1))
+    vs <- sapply(poss, function(vec) sample.local(vec, size = 1))
 
     make_dl(vs, g, y, Y, k, optimize_weights, sorted = sorted)
 }

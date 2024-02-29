@@ -5,6 +5,7 @@
 \alias{select_optimized}
 \alias{select_randomized}
 \alias{select_constrained}
+\alias{select_knn_constrained}
 \alias{select_quantiled}
 \alias{select_bycommunity}
 \alias{select_bydegseq}
@@ -25,6 +26,16 @@ select_optimized(
 select_randomized(n, g, y, Y, optimize_weights = FALSE, sorted = TRUE)
 
 select_constrained(n, g, y, Y, optimize_weights = FALSE, sorted = TRUE)
+
+select_knn_constrained(
+  n,
+  g,
+  y,
+  Y,
+  optimize_weights = FALSE,
+  sorted = TRUE,
+  constrain = TRUE
+)
 
 select_quantiled(
   n,

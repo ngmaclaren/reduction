@@ -16,6 +16,8 @@ obj_fn(vs, y, Y, optimize_weights = FALSE, ws = NULL, ...)
 \item{optimize_weights}{Logical for whether or not to optimize node weights.}
 
 \item{ws}{A vector of node weights, if already obtained}
+
+\item{...}{Container for arguments passed from optim()}
 }
 \value{
 A numeric vector of approximated system states at each value of the bifurcation parameter
@@ -24,5 +26,5 @@ A numeric vector of approximated system states at each value of the bifurcation 
 Given a sample of nodes, compute the objective function: the weighted or unweighted mean state of the sample of nodes, normalized appropriately. Can be used on its own or inside optim().
 }
 \seealso{
-[calc_obj()], [reduction.sample()]
+[calc_obj()]
 }

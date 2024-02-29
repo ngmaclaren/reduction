@@ -96,7 +96,7 @@ quants <- make_dataset(
 
 knnconstr <- make_dataset(
     ntrials = ntrials, ns.type = "knnconstr", ncores = ncores,
-    n = n, g = g, y = y, Y = Y, optimize_weights = optweights
+    n = n, g = g, y = y, Y = Y, optimize_weights = optimize_weights
 )
 
 comms <- make_dataset(

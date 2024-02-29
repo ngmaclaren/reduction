@@ -6,7 +6,7 @@
 \usage{
 make_dataset(
   ntrials,
-  ns.type = c("opt", "rand", "fixed", "constr", "quant", "comm"),
+  ns.type = c("opt", "rand", "fixed", "constr", "quant", "comm", "knnconstr"),
   ncores = 1,
   ...
 )
