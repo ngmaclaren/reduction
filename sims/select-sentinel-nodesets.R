@@ -94,12 +94,19 @@ quants <- make_dataset(
     n = n, g = g, y = y, Y = Y, optimize_weights = optimize_weights
 )
 
+knnconstr <- make_dataset(
+    ntrials = ntrials, ns.type = "knnconstr", ncores = ncores,
+    n = n, g = g, y = y, Y = Y, optimize_weights = optweights
+)
+
 comms <- make_dataset(
     ntrials = ntrials, ns.type = "comm", ncores = ncores,
     n = n, g = g, y = y, Y = Y, optimize_weights = optimize_weights
 )
 
-allns <- list(opt = opts, fixed = fixeds, rand = rands, constr = constrs, quant = quants, comm = comms)
+allns <- list(
+    opt = opts, fixed = fixeds, rand = rands, constr = constrs, quant = quants, knnconstr = knnconstr, comm = comms
+)
 
 ## store
 saveRDS(allns, file = outfile)
