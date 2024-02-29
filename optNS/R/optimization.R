@@ -44,7 +44,7 @@ calc_obj <- function(z, y) sum((z - y)^2)/(length(y)*mean(y))
 #' 
 #' @return A numeric vector of approximated system states at each value of the bifurcation parameter
 #' 
-#' @seealso [calc_obj()], [reduction.sample()]
+#' @seealso [calc_obj()]
 #' @export
 obj_fn <- function(vs, y, Y, optimize_weights = FALSE, ws = NULL, ...) {
     Z <- as.matrix(Y[, vs])
@@ -99,8 +99,8 @@ quadoptm <- function(vs, y, Y) {
 #' @return A numeric vector of node indices
 #' @export
 update_vs <- function(vs, g, y, Y, optimize_weights) {
-    toreplace <- sample(1:length(vs), 1)
-    replacewith <- sample(as.numeric(V(g)[-which(V(g) %in% vs)]), 1)
+    toreplace <- sample.local(1:length(vs), 1)
+    replacewith <- sample.local(as.numeric(V(g)[-which(V(g) %in% vs)]), 1)
     vs[toreplace] <- replacewith
     return(vs)
 }
