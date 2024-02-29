@@ -48,7 +48,8 @@ networks <- c( # only the empirical networks
 )
 graphlist <- lapply(networks, function(network) readRDS(paste0("../data/", network, ".rds")))
 dynamics <- c("doublewell", "SIS", "mutualistic", "genereg")
-ns.types <- c("opt", "fixed", "rand", "constr", "quant", "comm")[switch(useall, no = c(1, 3), yes = 1:6)]
+ns.types <- c("opt", "fixed", "rand", "constr", "quant", "knnconstr", "comm")
+ns.types <- ns.types[switch(useall, no = 1:3, yes = 1:length(ns.types))]
 conds <- expand.grid(networks, dynamics, ns.types, stringsAsFactors = FALSE)
 colnames(conds) <- c("networks", "dynamics", "ns.type")
 nslistnames <- apply(conds[, 1:2], 1, paste, collapse = "_")
