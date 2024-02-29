@@ -1,11 +1,12 @@
-useall <- "no" # "yes"
+useall <- "yes" # "no"
 useweights <- "no" # "yes"
 
 networks <- c(
     "dolphin", "celegans", "proximity", "euroroad", "email", "er", "gkk", "ba", "hk", "lfr"
 )
 dynamics <- c("doublewell", "SIS", "mutualistic", "genereg")
-ns.types <- c("opt", "fixed", "rand", "constr", "quant", "comm")[switch(useall, no = 1:3, yes = 1:6)]
+ns.types <- c("opt", "fixed", "rand", "constr", "quant", "knnconstr", "comm")
+ns.types <- ns.types[switch(useall, no = 1:3, yes = 1:length(ns.types))]
 
 conds <- expand.grid(networks, dynamics, ns.types, stringsAsFactors = FALSE)
 colnames(conds) <- c("networks", "dynamics", "ns.type")
@@ -48,11 +49,11 @@ model.glm <- glm(
 )
 summary(model.glm)
 
-model.lm <- lm(
-    log(error) ~ network + dynamics + ns.type,
-    data = subset(df, network != "er")
-)
-anova(model.lm)
+## model.lm <- lm(
+##     log(error) ~ network + dynamics + ns.type,
+##     data = subset(df, network != "er")
+## )
+## anova(model.lm)
 
 model.aov <- aov(log(error) ~ network + dynamics + ns.type, data = subset(df, network != "er"))
 TukeyHSD(model.aov, "ns.type")
