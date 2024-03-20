@@ -2,8 +2,8 @@ library(sfsmisc)
 library(optNS)
 
 save_plots <- TRUE # FALSE
-useall <- "yes" # "no"
-useweights <- "yes" # "no"
+useall <- "no" # "yes" # broken right now. Need to add knn-constrained
+useweights <- "no" # "yes"
 
 A.dynamics <- "doublewell"
 B.dynamics <- "SIS"
@@ -31,8 +31,8 @@ legendtext <- c("Optimized", "Degree-preserving", "Random", "Constrained", "Quan
 
 ht <- 7
 wd <- 14
-## palette("Set 1")
-palette("Tableau 10")
+palette("Set 1")
+## palette("Tableau 10")
 labelsize <- 1.5
 
 if(save_plots) {
@@ -43,6 +43,9 @@ if(save_plots) {
 
 par(mfrow = c(1, 2), mar = c(4, 4.1, 1, 0.9))
 
+colors <- c("#3584e4", "#ff7800", "#33d17a")
+pchs <- c(1, 2, 0)
+
 xlim1 <- range(unlist(x1[usethese]))
 ylim1 <- range(unlist(y1[usethese]))
 plot(NULL, xlim = xlim1, ylim = ylim1, xlab = "", ylab = "", xaxt = "n", yaxt = "n", log = "xy")
@@ -51,11 +54,11 @@ eaxis(2, n.axp = 1, cex.axis = labelsize)
 title(xlab = "Double-well", cex.lab = labelsize)
 title(ylab = "SIS", cex.lab = labelsize)
 for(i in usethese) {
-    points(x1[[i]], y1[[i]], col = i, pch = i)
-    points(mean(x1[[i]]), mean(y1[[i]]), col = i, pch = i, lwd = 3, cex = 3)
+    points(x1[[i]], y1[[i]], col = colors[i], pch = pchs[i])
+    points(mean(x1[[i]]), mean(y1[[i]]), col = colors[i], pch = pchs[i], lwd = 3, cex = 3)
 }
 legend(
-    "bottomright", bty = "n", col = usethese, pch = usethese, pt.lwd = 2, pt.cex = 2, cex = labelsize,
+    "bottomright", bty = "n", col = colors, pch = pchs, pt.lwd = 2, pt.cex = 2, cex = labelsize,
     legend = legendtext[usethese]
 )
 
@@ -67,8 +70,8 @@ eaxis(2, n.axp = 1, cex.axis = labelsize)
 title(ylab = "Double-well", cex.lab = labelsize)
 title(xlab = "SIS", cex.lab = labelsize)
 for(i in usethese) {
-    points(x2[[i]], y2[[i]], col = i, pch = i)
-    points(mean(x2[[i]]), mean(y2[[i]]), col = i, pch = i, lwd = 3, cex = 3)
+    points(x2[[i]], y2[[i]], col = colors[i], pch = pchs[i])
+    points(mean(x2[[i]]), mean(y2[[i]]), col = colors[i], pch = pchs[i], lwd = 3, cex = 3)
 }
 
 if(save_plots) dev.off()

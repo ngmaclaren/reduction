@@ -3,6 +3,7 @@ library(sfsmisc)
 get_error <- optNS::get_error
 
 save_plots <- TRUE # FALSE
+optweights <- "no" # "yes"
 
 dynamics <- "mutualistic" # doublewell SIS genereg mutualistic
 
@@ -10,13 +11,24 @@ networks <- c(
     "dolphin", "celegans", "proximity", "euroroad", "email", "er", "ba", "hk", "gkk", "lfr"
 )
 
-allns <- lapply(networks, function(network) readRDS(paste0("../data/ns-", network, "_", dynamics, ".rds")))
+allns <- lapply(
+    networks,
+    function(network) {
+        readRDS(
+            paste0("../data/ns-", network, "_", dynamics,
+                   switch(optweights, no = "", yes = "_w"),
+                   ".rds")
+        )
+    }
+)
 allerrors <- lapply(allns, function(ns) lapply(ns, get_error))
 
 palette("Set 1")
 ## palette("Tableau 10")
 
-imgfile <- paste0("../img/compare-networks-", dynamics, ".pdf")
+imgfile <- paste0("../img/compare-networks-", dynamics,
+                  switch(optweights, no = "", yes = "-w"),
+                  ".pdf")
 
 placelabel <- function(label, x, y, ...) {
     xlim <- par("usr")[1:2]
@@ -45,15 +57,18 @@ plotit <- function(dl, panellabel = "", xlab = "", ylab = "") { # list of errors
     )
     points(
         oe, jitter(rep(ypos[1], length(oe)), amount = amnt),
-        col = adjustcolor(1, alpha.f = alpha), pch = 1, cex = ptcex
+        col = adjustcolor("#3584e4", alpha), #adjustcolor(1, alpha.f = alpha),
+        pch = 1, cex = ptcex
     )
     points(
         fe, jitter(rep(ypos[2], length(fe)), amount = amnt),
-        col = adjustcolor(2, alpha.f = alpha), pch = 2, cex = ptcex
+        col = adjustcolor("#ff7800", alpha), #adjustcolor(2, alpha.f = alpha),
+        pch = 2, cex = ptcex
     )
     points(
         re, jitter(rep(ypos[3], length(re)), amount = amnt),
-        col = adjustcolor(3, alpha.f = alpha), pch = 3, cex = ptcex
+        col = adjustcolor("#33d17a", alpha), #adjustcolor(3, alpha.f = alpha),
+        pch = 0, cex = ptcex
     )
 }
 
@@ -76,7 +91,8 @@ for(i in seq_along(networks)) {
     placelabel(paste0("(", letters[i], ")"), 0.01, 0.99, adj = c(0, 1), cex = labelsize)
     if(i == 1) {
         legend(
-            "topright", bty = "n", col = 1:3, pch = 1:3, pt.cex = 1.5, cex = 1.5, pt.lwd = 2,
+            "topright", bty = "n", col = c("#3584e4", "#ff7800", "#33d17a"), #col = 1:3,
+            pch = c(1, 2, 0), pt.cex = 1.5, cex = 1.5, pt.lwd = 2,
             legend = c("Optimized", "Degree-preserving random", "Completely random")
         )
     }

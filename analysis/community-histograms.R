@@ -2,7 +2,7 @@ library(igraph)
 
 save_plots <- TRUE # FALSE
 
-networks <- c("dolphin", "proximity", "celegans", "euroroad", "email")
+networks <- c("dolphin", "proximity", "celegans", "euroroad", "email", "lfr")
 graphlist <- lapply(
     paste0("../data/", networks, ".rds"),
     readRDS
@@ -28,7 +28,7 @@ maxFromSame.rand <- mapply(function(rand, mbr) sapply(rand, max_fromsame, mbr), 
 ht <- 8
 wd <- 5
 labelsize <- 1.5
-palette("Dark 2")
+## palette("Dark 2")
 if(save_plots) {
     pdf("../img/community-histograms.pdf", height = ht, width = wd)
 } else {
@@ -43,14 +43,17 @@ for(i in seq_along(opts)) {
             c(tabulate(maxFromSame.opt[[i]], nbins = nbins),
               tabulate(maxFromSame.rand[[i]], nbins = nbins)),
             byrow = TRUE, nrow = 2),
-        col = c(1, 3), beside = TRUE,
+        col = c("#3584e4", "#33d17a"), beside = TRUE,
         ylim = ylim, cex.axis = labelsize,
         names.arg = seq(nbins), cex.names = labelsize, cex.lab = labelsize,
         ylab = "Frequency",
         xlab = switch(i, "", "", "", "", "Max. nodes from same community")
     )
     mtext(paste0("(", letters[i], ")"), line = 0.1, adj = 0.01, cex = labelsize)
-    if(i == 1) legend("topright", bty = "n", pch = 15, col = c(1, 3), legend = c("Optimized", "Random"),
-                      cex = 0.75*labelsize, pt.cex = 2)
+    if(i == 1) legend(
+                   "topright", bty = "n", pch = 15, col = c("#3584e4", "#33d17a"),
+                   legend = c("Optimized", "Random"),
+                   cex = 0.75*labelsize, pt.cex = 2
+               )
 }
 if(save_plots) dev.off()

@@ -1,4 +1,4 @@
-load("dolphin-demo.RData")
+load("dolphin-demo-weights.RData") # 0.0348389387 0.0050970282 0.0015119687 0.0004340011
 
 save_plots <- TRUE # FALSE
 
@@ -13,7 +13,7 @@ placelabel <- function(label, x, y, ...) {
     text(xpos, ypos, label, ...)
 }
 
-imgfile <- "../img/dolphin-demo.pdf"
+imgfile <- "../img/dolphin-demo-weights.pdf"
 colors <- list(
     nodestates = "#babdb6", # adjustcolor("gray60", 0.5),
     systemstate = "#000000", #"gray30",
@@ -22,21 +22,20 @@ colors <- list(
     GBB = "#edd400", #3,
     DART = "#f57900"#4
 )
-legendtext <- c("Node states", "System state", "Approximation", "Selected nodes", "GBB", "DART")
+legendtext <- c("Node states", "System state", "Approximation", "Selected nodes")
 
-ht <- 12
+ht <- 8
 wd <- 9
 labelsize <- 2
-## palette("Set 1")
-# palette("Tableau 10")
+palette("Tableau 10")
 
 if(save_plots) {
-    pdf("../img/dolphin-demo.pdf", height = 12, width = wd)
+    pdf(imgfile, height = ht, width = wd)
 } else {
     dev.new(height = ht, width = wd)
 }
 
-par(mfrow = c(3, 2), mar = c(5, 5, 1, 1))
+par(mfrow = c(2, 2), mar = c(5, 5, 1, 1))
 
 plot_ns <- function(Ds, Y, color, labelsize) {
     matplot(
@@ -56,7 +55,12 @@ for(i in seq_along(solns)) {
         lines(Ds, Y[, solns[[i]]$vs], lty = 1, lwd = 8, col = colors$approximation)
     } else {
         matlines(Ds, Y[, solns[[i]]$vs], lty = 1, lwd = 4, col = colors$selectednodes)
-        lines(Ds, rowMeans(Y[, solns[[i]]$vs]), lty = 1, lwd = 8, col = colors$approximation)
+        ##lines(Ds, rowMeans(Y[, solns[[i]]$vs]), lty = 1, lwd = 8, col = colors$approximation)
+        lines(
+            Ds,
+            apply(Y[, solns[[i]]$vs], 1, weighted.mean, w = solns[[i]]$ws),
+            lty = 1, lwd = 8, col = colors$approximation
+        )
     }
 
     placelabel(paste0("(", letters[i], ")"), 0.01, 0.99, adj = c(0, 1), cex = labelsize)
@@ -66,16 +70,5 @@ for(i in seq_along(solns)) {
                    col = unlist(colors), legend = legendtext
                )
 }
-
-## GBB
-plot_ns(Ds, Y, colors$nodestates, labelsize)
-lines(Ds, GBB.obs, lty = 1, lwd = 8, col = colors$systemstate)
-lines(Ds, GBB[, 1], lty = 1, lwd = 8, col = colors$GBB)
-placelabel(paste0("(", letters[5], ")"), 0.01, 0.99, adj = c(0, 1), cex = labelsize)
-## DART
-plot_ns(Ds, Y, colors$nodestates, labelsize)
-lines(Ds, DART.obs, lty = 1, lwd = 8, col = colors$systemstate)
-lines(Ds, DART[, 1], lty = 1, lwd = 8, col = colors$DART)
-placelabel(paste0("(", letters[6], ")"), 0.01, 0.99, adj = c(0, 1), cex = labelsize)
 
 if(save_plots) dev.off()
