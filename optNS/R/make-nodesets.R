@@ -8,6 +8,23 @@ sample.local <- function(x, ...) {
     x[sample.int(length(x), ...)]
 }
 
+sample.frombins <- function(bins) {
+    ## should return one element from each bin with no repetition
+    sample.frombin <- function(bin, out) {
+        avail <- bins[[i]][!(bins[[i]] %in% out)]
+        if(length(avail) == 0) {
+            return(NA)
+        } else {
+            return(sample.local(avail, size = 1))
+        }
+    }
+    out <- numeric(length(bins))
+    for(i in seq_along(bins)) out[i] <- sample.frombin(bins[[i]], out)
+
+    return(out)
+}
+
+
 #' Functions to select sentinel node sets
 #'
 #' Each of these functions returns a node set along with some additional information. See details.
@@ -126,7 +143,8 @@ select_quantiled <- function(n, g, y, Y, optimize_weights = FALSE, sorted = TRUE
         quantiles[-length(quantiles)], quantiles[-1], SIMPLIFY = FALSE
     )
     
-    vs <- sapply(bins, sample.local, 1)
+    ## vs <- sapply(bins, sample.local, 1)
+    vs <- sample.frombins(bins)
 
     make_dl(vs, g, y, Y, k, optimize_weights, sorted = sorted)
 }
@@ -135,7 +153,7 @@ select_by_comm_prob <- function(n, g, partition, pvec, vs = V(g)) {
                                         # This function selects nodes according to a probability that is
                                         # proportional to the square root of community size.
     stopifnot(is.numeric(n))
-    stopifnot(is.igraph(g))
+    stopifnot(is_igraph(g))
     stopifnot(inherits(partition, "communities"))
     stopifnot(length(pvec) == length(partition))
 
@@ -152,7 +170,9 @@ select_by_comm_prob <- function(n, g, partition, pvec, vs = V(g)) {
 
     df <- data.frame(v = as.numeric(available), C = as.numeric(mbr[available]))
 
-    sapply(C_vec, function(C) sample.local(df$v[df$C == C], 1))
+    ## sapply(C_vec, function(C) sample.local(df$v[df$C == C], 1))
+    bins <- lapply(C_vec, function(C) df$v[df$C == C])
+    sample.frombins(bins)
     
 }
 
@@ -183,8 +203,8 @@ select_bydegseq <- function(n, g, comps, y, Y, optimize_weights = FALSE, sorted 
     k <- degree(g)
     ks <- k[comps]
     poss <- lapply(ks, function(ki) as.numeric(V(g)[which(k == ki)]))
-    ## vs <- sapply(poss, function(vec) if(length(vec) == 1) vec else sample(vec, 1))
-    vs <- sapply(poss, function(vec) sample.local(vec, size = 1))
+    ## vs <- sapply(poss, function(vec) sample.local(vec, size = 1)) # allows repetition
+    vs <- sample.frombins(poss)
 
     make_dl(vs, g, y, Y, k, optimize_weights, sorted = sorted)
 }

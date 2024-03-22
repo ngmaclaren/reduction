@@ -32,7 +32,7 @@ if(interactive()) {
     args$network <- "dolphin"
     args$dynamics <- "doublewell"
     args$ntrials <- 3
-    args$optimize_weights <- TRUE # FALSE
+    args$optimize_weights <- FALSE # TRUE
 }
 
 ## packages
