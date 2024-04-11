@@ -1,7 +1,7 @@
                                         # Opens the same way as ANOVA-home, but the conditions will be different
 networks <- c(
                                         # Exclude ER
-    "dolphin", "celegans", "proximity", "euroroad", "email", "gkk", "ba", "hk", "lfr" # , "er"
+    "dolphin", "proximity", "celegans", "euroroad", "email", "gkk", "ba", "hk", "lfr" # , "er"
 )
                                         # Use all dynamics
 dynamics <- c("doublewell", "SIS", "mutualistic", "genereg")
@@ -63,19 +63,20 @@ df <- do.call(
     apply(conds, 1, function(row) collect_errors(as.character(row), nodesets, fullstates))
 )
 
-df$network <- factor(df$network)
-df$dynamicsA <- factor(df$dynamicsA)
-df$dynamicsB <- factor(df$dynamicsB)
-df$ns.type <- factor(df$ns.type)
-df$ns.type <- relevel(df$ns.type, "rand")
+df$network <- factor(df$network, levels = networks)
+df$dynamicsA <- factor(df$dynamicsA, levels = dynamics)
+df$dynamicsB <- factor(df$dynamicsB, levels = dynamics)
+df$ns.type <- factor(df$ns.type, levels = c("rand", "opt", "fixed", "constr", "quant", "knnconstr", "comm"))
 
-model.glm <- glm(log(error) ~ network + dynamicsA + dynamicsB + ns.type, data = df, family = gaussian)
+## model.glm <- glm(log(error) ~ network + dynamicsA + dynamicsB + ns.type, data = df, family = gaussian)
 model.aov <- aov(log(error) ~ network + dynamicsA + dynamicsB + ns.type, data = df)
+model.lm <- lm(log(error) ~ network + dynamicsA + dynamicsB + ns.type, data = df)
 
+summary(model.lm)$r.squared
 anova(model.aov)
-summary(model.glm)
+## summary(model.glm)
 TukeyHSD(model.aov, "ns.type")
-1 - (model.glm$deviance/model.glm$null.deviance)
-exp(coef(model.glm))
-1/exp(coef(model.glm))
+## 1 - (model.glm$deviance/model.glm$null.deviance)
+## exp(coef(model.glm))
+## 1/exp(coef(model.glm))
 

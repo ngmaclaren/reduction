@@ -5,7 +5,7 @@ get_error <- optNS::get_error
 save_plots <- TRUE # FALSE
 optweights <- "no" # "yes"
 
-dynamics <- "mutualistic" # doublewell SIS genereg mutualistic
+dynamics <- "genereg" # doublewell SIS genereg mutualistic
 
 networks <- c(
     "dolphin", "celegans", "proximity", "euroroad", "email", "er", "ba", "hk", "gkk", "lfr"

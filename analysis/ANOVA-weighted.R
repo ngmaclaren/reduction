@@ -3,7 +3,7 @@ ncores <- detectCores()-1
 
 networks <- c(
                                         # Exclude ER
-    "dolphin", "celegans", "proximity", "euroroad", "email", "gkk", "ba", "hk", "lfr" # , "er"
+    "dolphin", "proximity", "celegans", "euroroad", "email", "gkk", "ba", "hk", "lfr" # , "er"
 )
                                         # Use all dynamics
 dynamics <- c("doublewell", "SIS", "mutualistic", "genereg")
@@ -66,15 +66,22 @@ wdf$ns.type[wdf$ns.type == "opt"] <- "optw"
 
 df <- rbind(udf, wdf)
 
-df$network <- factor(df$network)
-df$dynamics <- factor(df$dynamics)
-df$ns.type <- factor(df$ns.type)
-df$ns.type <- relevel(df$ns.type, "rand")
+df$network <- factor(df$network, levels = networks)
+df$dynamics <- factor(df$dynamics, levels = dynamics)
+df$ns.type <- factor(df$ns.type, levels = c("rand", "opt", "optw"))
 
-model.glm <- glm(log(error) ~ network + dynamics + ns.type, data = df, family = gaussian)
+## model.glm <- glm(log(error) ~ network + dynamics + ns.type, data = df, family = gaussian)
 model.aov <- aov(log(error) ~ network + dynamics + ns.type, data = df)
+model.lm <- lm(log(error) ~ network + dynamics + ns.type, data = df)
+summary(model.lm)$r.squared
 anova(model.aov)
-summary(model.glm)
+## summary(model.glm)
+## coef(model.glm)
+## exp(coef(model.glm))
+## 1/exp(coef(model.glm))
+hsd <- TukeyHSD(model.aov)$ns.type
+hsd
+1/exp(hsd[, "diff"])
 
 ### Other dyanmics ###
 
@@ -142,19 +149,20 @@ wdfo$ns.type[wdfo$ns.type == "opt"] <- "optw"
 
 dfo <- rbind(udfo, wdfo)
 
-dfo$network <- factor(dfo$network)
-dfo$dynamicsA <- factor(dfo$dynamicsA)
-dfo$dynamicsB <- factor(dfo$dynamicsB)
-dfo$ns.type <- factor(dfo$ns.type)
+dfo$network <- factor(dfo$network, levels = networks)
+dfo$dynamicsA <- factor(dfo$dynamicsA, levels = dynamics)
+dfo$dynamicsB <- factor(dfo$dynamicsB, levels = dynamics)
+dfo$ns.type <- factor(dfo$ns.type, levels = c("rand", "opt", "optw"))
 dfo$ns.type <- relevel(dfo$ns.type, "rand")
 
-model.glm_other <- glm(log(error) ~ network + dynamicsA + dynamicsB + ns.type, data = dfo, family = gaussian)
+##model.glm_other <- glm(log(error) ~ network + dynamicsA + dynamicsB + ns.type, data = dfo, family = gaussian)
 model.aov_other <- aov(log(error) ~ network + dynamicsA + dynamicsB + ns.type, data = subset(dfo, network != "er"))
+model.lm_other <- lm(log(error) ~ network + dynamicsA + dynamicsB + ns.type, data = subset(dfo, network != "er"))
 
-summary(model.glm_other)
+##summary(model.glm_other)
 
-1/exp(coef(model.glm_other))
+##1/exp(coef(model.glm_other))
 
-
+summary(model.lm_other)$r.squared
 anova(model.aov_other)
 TukeyHSD(model.aov_other, "ns.type")

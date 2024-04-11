@@ -1,5 +1,8 @@
 load("dolphin-demo-weights.RData") # 0.0348389387 0.0050970282 0.0015119687 0.0004340011
 
+unweighted <- new.env()
+load("dolphin-demo.RData", envir = unweighted)
+
 save_plots <- TRUE # FALSE
 
 library(latex2exp)
@@ -17,12 +20,19 @@ imgfile <- "../img/dolphin-demo-weights.pdf"
 colors <- list(
     nodestates = "#babdb6", # adjustcolor("gray60", 0.5),
     systemstate = "#000000", #"gray30",
+    weighted = "#e9b96e",
     approximation = "#3465a4", #1,
-    selectednodes = "#73d216", #2,
-    GBB = "#edd400", #3,
-    DART = "#f57900"#4
+    selectednodes = "#73d216" #2,
+    #GBB = "#edd400", #3,
+    #DART = "#f57900"#4
 )
-legendtext <- c("Node states", "System state", "Approximation", "Selected nodes")
+legendtext <- c(
+    "Node states",
+    "System state",
+    "Weight-optimized",
+    "Not weight-optimized",
+    "Selected nodes"
+)
 
 ht <- 8
 wd <- 9
@@ -52,15 +62,23 @@ for(i in seq_along(solns)) {
     lines(Ds, y, lty = 1, lwd = 6, col = colors$systemstate)
 
     if(ns[i] == 1) {
-        lines(Ds, Y[, solns[[i]]$vs], lty = 1, lwd = 8, col = colors$approximation)
+        lines(Ds, with(unweighted, Y[, solns[[1]]$vs]), lty = 1, lwd = 8,
+              col = adjustcolor(colors$approximation, 1))#0.6))
+
+        lines(Ds, Y[, solns[[i]]$vs], lty = 1, lwd = 8, col = colors$weighted)#colors$approximation)
+        
     } else {
         matlines(Ds, Y[, solns[[i]]$vs], lty = 1, lwd = 4, col = colors$selectednodes)
         ##lines(Ds, rowMeans(Y[, solns[[i]]$vs]), lty = 1, lwd = 8, col = colors$approximation)
+        lines(Ds, with(unweighted, rowMeans(Y[, solns[[i]]$vs])), lty = 1, lwd = 8,
+              col = adjustcolor(colors$approximation, 1))#0.6))
+
         lines(
             Ds,
             apply(Y[, solns[[i]]$vs], 1, weighted.mean, w = solns[[i]]$ws),
-            lty = 1, lwd = 8, col = colors$approximation
+            lty = 1, lwd = 8, col = colors$weighted#colors$approximation
         )
+
     }
 
     placelabel(paste0("(", letters[i], ")"), 0.01, 0.99, adj = c(0, 1), cex = labelsize)

@@ -5,10 +5,6 @@ load("dolphin-demo.RData")
 
                                         # ε for dolphin network n \in 1, 2, 3, 4
 round(get_error(solns), 3)
-                                        # GBB
-calc_obj(as.numeric(GBB), GBB.obs)
-                                        # DART
-calc_obj(as.numeric(DART), DART.obs)
 
                                         # Confirm that we find the exact solution with n = 1 or n = 2
 find_exact <- function(n, ...) {
@@ -29,8 +25,15 @@ find_exact <- function(n, ...) {
     ##}
 }
 exact <- list(find_exact(1, y, Y, Ds), find_exact(2, y, Y, Ds))
-get_vs(exact)
-get_vs(solns[1:2])
+## get_vs(exact)
+## get_vs(solns[1:2])
+all.equal(get_vs(exact), get_vs(solns[1:2]))
+
+                                        # GBB
+calc_obj(as.numeric(GBB), GBB.obs)
+                                        # DART
+calc_obj(as.numeric(DART), DART.obs)
+
 
                                         # Calculate ε for D <= 0.6
 Ds <- localsolver::.doublewell$Ds
@@ -60,3 +63,7 @@ errors <- lapply(ns, get_error)
 sum(errors$fixed > max(errors$opt))
                                         # completely random
 sum(errors$rand > max(errors$opt))
+
+                                        # What degree do the BA network hub nodes have?
+BA <- readRDS("../data/ba.rds")
+sort(igraph::degree(BA), decreasing = TRUE)[1:5]
