@@ -26,7 +26,11 @@ fullstatefile <- paste0("../data/fullstate-", network, ".rds")
 
 g <- readRDS(paste0("../data/", network, ".rds"))
 N <- vcount(g)
-A <- as_adj(g, "both", sparse = FALSE)
+if(is_weighted(g)) {
+    A <- as_adj(g, "both", attr = "weight", sparse = FALSE)
+} else {
+    A <- as_adj(g, "both", sparse = FALSE)
+}
 
 times <- 0:15 # for all? was 0:20 for SIS?
 
