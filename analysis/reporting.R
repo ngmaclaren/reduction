@@ -67,3 +67,30 @@ sum(errors$rand > max(errors$opt))
                                         # What degree do the BA network hub nodes have?
 BA <- readRDS("../data/ba.rds")
 sort(igraph::degree(BA), decreasing = TRUE)[1:5]
+
+
+                                        # Across all node set types (random, degree-preserving, and optimized) and
+                                        # dynamics, what proportion of random node sets are larger than the largest
+                                        # optimzied node set? and same for degree preserving.
+count_smaller <- function(dynamics) {
+    networks <- c(
+        "dolphin", "celegans", "proximity", "euroroad", "email", "er", "ba", "hk", "gkk", "lfr"
+    )
+    allns <- lapply(
+        networks,
+        function(network) readRDS(paste0("../data/ns-", network, "_", dynamics, ".rds"))
+    )
+    allerrors <- lapply(allns, function(ns) lapply(ns, get_error))
+
+    oe <- lapply(allerrors, `[[`, "opt")
+    re <- lapply(allerrors, `[[`, "rand")
+    fe <- lapply(allerrors, `[[`, "fixed")
+
+    c(
+        rand = sum(mapply(function(opt, rand) sum(rand < max(opt)), oe, re)),
+        fixed = sum(mapply(function(opt, fixed) sum(fixed < max(opt)), oe, fe))
+    )
+}
+
+dyns <- c("doublewell", "mutualistic", "genereg", "SIS")
+rowSums(sapply(dyns, count_smaller)/1000)

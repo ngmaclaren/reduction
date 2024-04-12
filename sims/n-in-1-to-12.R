@@ -10,7 +10,7 @@ args <- parse_args(
     convert_hyphens_to_underscores = TRUE
 )
 
-if(interactice()) {
+if(interactive()) {
     args$network <- "dolphin"
 }
 
