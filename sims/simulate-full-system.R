@@ -11,7 +11,7 @@ args <- parse_args(
 )
 
 if(interactive()) {
-    args$network <- "train_bombers"
+    args$network <- ""
 }
 
 library(parallel)
