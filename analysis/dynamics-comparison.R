@@ -2,38 +2,47 @@ library(sfsmisc)
 library(optNS)
 
 save_plots <- TRUE # FALSE
-useall <- "no" # "yes" # broken right now. Need to add knn-constrained
-useweights <- "no" # "yes"
 
-A.dynamics <- "doublewell"
-B.dynamics <- "SIS"
+imgfile <- "../img/dynamics-comparison.pdf"
 
-imgfile <- switch(useweights, no = "../img/dynamics-comparison.pdf", yes = "../img/dynamics-comparison_w.pdf")
+Ylist <- readRDS("../data/fullstate-dolphin.rds") # still fixing dolphin network
 
-Ylist <- readRDS("../data/fullstate-dolphin.rds")
+ns.types <- c("opt", "fixed", "rand")
+legendtext <- c("Optimized", "Degree-preserving", "Random")
 
-A <- readRDS(switch(useweights, no = "../data/ns-dolphin_doublewell.rds", yes = "../data/ns-dolphin_doublewell_w.rds"))
-A.Y <- Ylist$doublewell
-A.y <- rowMeans(A.Y)
-B <- readRDS(switch(useweights, no = "../data/ns-dolphin_SIS.rds", yes = "../data/ns-dolphin_SIS_w.rds"))
-B.Y <- Ylist$SIS
-B.y <- rowMeans(B.Y)
+make_plotdata <- function(dynamicsA, dynamicsB, ns.types, Ylist) {
+    A <- readRDS(paste0("../data/ns-dolphin_", dynamicsA, ".rds"))[ns.types]
+    A.Y <- Ylist[[dynamicsA]]
+    A.y <- rowMeans(A.Y)
 
-weightsflag <- switch(useweights, no = FALSE, yes = TRUE)
-x1 <- lapply(A, get_error)
-y1 <- lapply(A, function(ns) sapply(ns, function(x) obj_fn(x$vs, B.y, B.Y, weightsflag, ws = x$ws)))
+    B <- readRDS(paste0("../data/ns-dolphin_", dynamicsB, ".rds"))[ns.types]
+    B.Y <- Ylist[[dynamicsB]]
+    B.y <- rowMeans(B.Y)
 
-x2 <- lapply(B, get_error)
-y2 <- lapply(B, function(ns) sapply(ns, function(x) obj_fn(x$vs, A.y, A.Y, weightsflag, ws = x$ws)))
+    list(
+        x = lapply(A, get_error),
+        y = lapply(A, function(ns) sapply(ns, function(x) obj_fn(x$vs, B.y, B.Y)))
+    )
+}
 
-usethese <- switch(useall, no = 1:3, yes = seq_along(A))
-legendtext <- c("Optimized", "Degree-preserving", "Random", "Constrained", "Quantiled", "Community-based")
-
-ht <- 7
-wd <- 14
-palette("Set 1")
-## palette("Tableau 10")
+unit <- 2.5
+ht <- 4*unit
+wd <- 3*unit
 labelsize <- 1.5
+
+colors <- list(opt = "#3584e4", fixed = "#ff7800", rand = "#33d17a")
+pchs <- list(opt = 1, fixed = 2, rand = 0)
+
+dyns <- c("doublewell", "mutualistic", "genereg", "SIS")
+conds <- expand.grid(dyns, dyns, stringsAsFactors = FALSE)
+colnames(conds) <- c("dynamicsB", "dynamicsA")
+labnames <- c("Double-well", "Mutualistic species", "Gene-regulatory", "SIS")
+labnames <- expand.grid(labnames, labnames, stringsAsFactors = FALSE)
+colnames(labnames) <- c("nameB", "nameA")
+conds <- cbind(conds, labnames)
+conds <- conds[conds$dynamicsA != conds$dynamicsB, ]
+conds <- conds[, c("dynamicsA", "dynamicsB", "nameA", "nameB")]
+
 
 if(save_plots) {
     pdf(imgfile, height = ht, width = wd)
@@ -41,37 +50,31 @@ if(save_plots) {
     dev.new(height = ht, width = wd)
 }
 
-par(mfrow = c(1, 2), mar = c(4, 4.1, 1, 0.9))
+par(mfrow = c(4, 3), mar = c(4, 4.1, 1, 0.9))
 
-colors <- c("#3584e4", "#ff7800", "#33d17a")
-pchs <- c(1, 2, 0)
+for(i in seq(nrow(conds))) {
+    plotdata <- make_plotdata(conds[i, "dynamicsA"], conds[i, "dynamicsB"], ns.types, Ylist)
+    x <- plotdata$x
+    y <- plotdata$y
+    
+    xlim <- range(unlist(x))
+    ylim <- range(unlist(y))
 
-xlim1 <- range(unlist(x1[usethese]))
-ylim1 <- range(unlist(y1[usethese]))
-plot(NULL, xlim = xlim1, ylim = ylim1, xlab = "", ylab = "", xaxt = "n", yaxt = "n", log = "xy")
-eaxis(1, n.axp = 1, cex.axis = labelsize)
-eaxis(2, n.axp = 1, cex.axis = labelsize)
-title(xlab = "Double-well", cex.lab = labelsize)
-title(ylab = "SIS", cex.lab = labelsize)
-for(i in usethese) {
-    points(x1[[i]], y1[[i]], col = colors[i], pch = pchs[i])
-    points(mean(x1[[i]]), mean(y1[[i]]), col = colors[i], pch = pchs[i], lwd = 3, cex = 3)
-}
-legend(
-    "bottomright", bty = "n", col = colors, pch = pchs, pt.lwd = 2, pt.cex = 2, cex = labelsize,
-    legend = legendtext[usethese]
-)
-
-xlim2 <- range(unlist(x2[usethese]))
-ylim2 <- range(unlist(y2[usethese]))
-plot(NULL, xlim = xlim2, ylim = ylim2, xlab = "", ylab = "", xaxt = "n", yaxt = "n", log = "xy")
-eaxis(1, n.axp = 1, cex.axis = labelsize)
-eaxis(2, n.axp = 1, cex.axis = labelsize)
-title(ylab = "Double-well", cex.lab = labelsize)
-title(xlab = "SIS", cex.lab = labelsize)
-for(i in usethese) {
-    points(x2[[i]], y2[[i]], col = colors[i], pch = pchs[i])
-    points(mean(x2[[i]]), mean(y2[[i]]), col = colors[i], pch = pchs[i], lwd = 3, cex = 3)
+    plot(NULL, xlim = xlim, ylim = ylim, xlab = "", ylab = "", xaxt = "n", yaxt = "n", log = "xy")
+    eaxis(1, n.axp = 1, cex.axis = labelsize)
+    eaxis(2, n.axp = 1, cex.axis = labelsize)
+    title(xlab = conds[i, "nameA"], cex.lab = labelsize)
+    title(ylab = conds[i, "nameB"], cex.lab = labelsize)
+    for(nst in ns.types) points(x[[nst]], y[[nst]], col = adjustcolor(colors[[nst]], .25), pch = pchs[[nst]])
+    for(nst in ns.types) points(mean(x[[nst]]), mean(y[[nst]]), col = colors[[nst]],
+                                pch = pchs[[nst]], lwd = 3, cex = 3)
+   
+    if(i == 1) {
+        legend(
+            "bottomright", bty = "n", col = unlist(colors), pch = unlist(pchs), pt.lwd = 2, pt.cex = 2,
+            cex = labelsize, legend = legendtext
+        )
+    }
 }
 
 if(save_plots) dev.off()

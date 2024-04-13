@@ -1,7 +1,7 @@
 library(igraph)
 library(optNS)
 
-save_plots <- TRUE # FALSE
+save_plots <- FALSE # TRUE
 
 dolphin <- readRDS("../data/dolphin.rds")
 dolphin.N <- vcount(dolphin)
