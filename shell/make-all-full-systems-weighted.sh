@@ -1,7 +1,7 @@
 #!/bin/bash
 
-networks=(windsurfers train_terrorists netsci_weighted intl_trade gap_junction_herm gap_junction_male drug biblenouns NZcollab proximity_weighted)
-# networks=(train_bombers foodweb_dry foodweb_wet windsurfers highschool macaques residence_hall flights celegans_neural unicodelang proximity_weighted)
+networks=(windsurfers macaques train_terrorists highschool drug residence_hall netsci_weighted proximity_weighted gap_junction_herm intl_trade)
+networks=()
 
 for network in ${networks[@]}; do
     jobname=fs-$network
