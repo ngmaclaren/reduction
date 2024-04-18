@@ -4,12 +4,18 @@ get_error <- optNS::get_error
 
 save_plots <- TRUE # FALSE
 optweights <- "no" # "yes"
+use_weighted_networks <- TRUE # FALSE
 
-dynamics <- "genereg" # doublewell SIS genereg mutualistic
+dynamics <- "doublewell" # genereg SIS genereg mutualistic
 
 networks <- c(
     "dolphin", "celegans", "proximity", "euroroad", "email", "er", "ba", "hk", "gkk", "lfr"
 )
+weighted <- c(
+    "windsurfers", "macaques", "train_terrorists", "highschool", "drug", "residence_hall", "netsci_weighted",
+    "proximity_weighted", "gap_junction_herm", "intl_trade"
+)
+if(use_weighted_networks) networks <- weighted
 
 allns <- lapply(
     networks,
@@ -26,9 +32,13 @@ allerrors <- lapply(allns, function(ns) lapply(ns, get_error))
 palette("Set 1")
 ## palette("Tableau 10")
 
-imgfile <- paste0("../img/compare-networks-", dynamics,
-                  switch(optweights, no = "", yes = "-w"),
-                  ".pdf")
+if(use_weighted_networks) {
+    imgfile <- paste0("../img/compare-weighted-networks-", dynamics, ".pdf")
+} else {
+    imgfile <- paste0("../img/compare-networks-", dynamics,
+                      switch(optweights, no = "", yes = "-w"),
+                      ".pdf")
+}
 
 placelabel <- function(label, x, y, ...) {
     xlim <- par("usr")[1:2]
