@@ -188,7 +188,11 @@ select_bycommunity <- function(n, g, y, Y, optimize_weights = FALSE, sorted = TR
         avail <- as.numeric(V(g))
     }
 
-    partition <- cluster_louvain(g)
+    if(is_directed(g)) {
+        partition <- cluster_walktrap(g)
+    } else {
+        partition <- cluster_louvain(g)
+    }
     sizes <- as.numeric(table(membership(partition)))
     pvec <- sqrt(sizes)/sum(sqrt(sizes))
 

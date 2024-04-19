@@ -1,4 +1,5 @@
-use_weighted_networks <- TRUE # FALSE
+use_weighted_networks <- FALSE # TRUE
+use_directed_networks <- TRUE # FALSE
 
 networks <- c(
                                         # Exclude ER
@@ -8,7 +9,12 @@ weighted <- c(
     "windsurfers", "macaques", "train_terrorists", "highschool", "drug", "residence_hall", "netsci_weighted",
     "proximity_weighted", "gap_junction_herm", "intl_trade"
 )
+directed <- c(
+    "canton", "physician_trust", "email_company", "flamingo", "ecoli", "yeast", "usair", "jung-c", "email_uni",
+    "faa"
+)
 if(use_weighted_networks) networks <- weighted
+if(use_directed_networks) networks <- directed
                                         # Use all dynamics and node set types
 dynamics <- c("doublewell", "SIS", "mutualistic", "genereg")
 ns.types <- c("opt", "fixed", "rand", "constr", "quant", "knnconstr", "comm")
