@@ -11,7 +11,7 @@ args <- parse_args(
 )
 
 if(interactive()) {
-    args$network <- "highschool" # residence_hall, macaques, highschool
+    args$network <- "flamingo" # residence_hall, macaques, highschool
 }
 
 library(parallel)
