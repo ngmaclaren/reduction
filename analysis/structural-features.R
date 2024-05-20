@@ -4,7 +4,7 @@ library(igraph)
 
 set.seed(123) # because of the Louvain algorithm
 
-save_plots <- TRUE # FALSE
+save_plots <- FALSE # TRUE
 
 useall <- "no" # "yes"    # If no, only opt and rand
 useweights <- "no" # "yes"
@@ -145,7 +145,7 @@ plotit <- function(var, net, dyn, optcolor, randcolor, labelsize, df,
     hist.opt <- hist(opt, breaks = hist.all$breaks, plot = FALSE)
     hist.rand <- hist(rand, breaks = hist.all$breaks, plot = FALSE)
 
-    ylim <- c(0, max(c(hist.opt$counts, hist.rand$counts)))
+    ylim <- c(0, max(c(hist.opt$counts, hist.rand$counts))); print(ylim)
 
     plot(hist.opt, col = adjustcolor(optcolor, .5), ylim = ylim, main = "",
          xlab = switch(show.xlabel, no = "", yes = labellookup),
@@ -170,14 +170,14 @@ if(save_plots) {
 } else {
     dev.new(height = ht, width = wd)
 }
-par(mfcol = c(5, 2), mar = c(4, 4.5, 1, 1)) # keeping mar consistent makes the panels come out more evenly but hides the xlabels at the bottom. ylabels are also hidden. 
+par(mfcol = c(5, 2), mar = c(4, 4.5, 1.75, 0.5)) # keeping mar consistent makes the panels come out more evenly but hides the xlabels at the bottom. ylabels are also hidden. 
 show.legend <- c("yes", rep("no", 9))
 show.xlabel <- c(rep("no", 4), "yes", rep("no", 4), "yes")
 show.ylabel <- c(rep("yes", 5), rep("no", 5))
 for(i in seq_along(networks)) {
     plotit("knn", networks[i], "doublewell", optcolor, randcolor, labelsize, df,
            show.legend = show.legend[i], show.xlabel = show.xlabel[i], show.ylabel = show.ylabel[i])
-    mtext(paste0("(", letters[i], ")"), cex = 0.75*labelsize, line = -2, adj = 0.01)
+    mtext(paste0("(", letters[i], ")"), cex = 0.75*labelsize, line = 0, adj = 0)
 }
 if(save_plots) dev.off()
 
@@ -186,14 +186,14 @@ if(save_plots) {
 } else {
     dev.new(height = ht, width = wd)
 }
-par(mfcol = c(5, 2), mar = c(4, 4.5, 1, 1.1))
+par(mfcol = c(5, 2), mar = c(4, 4.5, 1.9, 1.15))
 show.legend <- c("yes", rep("no", 9))
 show.xlabel <- c(rep("no", 4), "yes", rep("no", 4), "yes")
 show.ylabel <- c(rep("yes", 5), rep("no", 5))
 for(i in seq_along(networks)) {
     plotit("lcl", networks[i], "doublewell", optcolor, randcolor, labelsize, df,
            show.legend = show.legend[i], show.xlabel = show.xlabel[i], show.ylabel = show.ylabel[i])
-    mtext(paste0("(", letters[i], ")"), cex = 0.75*labelsize, line = -2, adj = 0.01)
+    mtext(paste0("(", letters[i], ")"), cex = 0.75*labelsize, line = 0.1, adj = 0)
 }
 if(save_plots) dev.off()
 
@@ -210,15 +210,19 @@ morediscrete <- function(net, dyn, optcolor, randcolor, labelsize, df, nodesets,
     table.rand <- tabulate(rand, nbins = nbins)
 
     ylim <- c(0, max(c(table.opt, table.rand)))
+    ## yaxticks <- seq(ylim[1], ylim[2], by = 10)
+    ## print(yaxticks)
+    ## print(ifelse(yaxticks %% 50 == 0, yaxticks, ""))
 
     barplot(
         matrix(c(table.opt, table.rand), byrow = TRUE, nrow = 2),
         col = adjustcolor(c(optcolor, randcolor), .5), beside = TRUE,
         ylim = ylim, cex.axis = labelsize,
         names.arg = seq(nbins), cex.names = labelsize, cex.lab = labelsize,
-        ylab = switch(show.ylabel, no = "", yes = "Frequency"),
+        ylab = switch(show.ylabel, no = "", yes = "Frequency"), #yaxt = "no",
         xlab = switch(show.xlabel, no = "", yes = expression(italic(K)))#"K")
     )
+    ## axis(2, at = yaxticks, labels = ifelse(yaxticks %% 50 == 0, yaxticks, ""), cex.axis = labelsize)
     if(show.legend == "yes") {
         legend(
             "topright", bty = "n", pch = 22, pt.bg = adjustcolor(c(optcolor, randcolor), .5), pt.cex = 2,
@@ -232,7 +236,7 @@ if(save_plots) {
 } else {
     dev.new(height = (ht/5)*3, width = wd)
 }
-par(mfcol = c(3, 2), mar = c(4, 4.5, 1, 1))
+par(mfcol = c(3, 2), mar = c(4, 4.5, 1.9, 0.5))
 show.legend <- c("yes", rep("no", 5))
 show.xlabel <- rep(c(rep("no", 2), "yes"), 2)
 show.ylabel <- c(rep("yes", 3), rep("no", 3))
@@ -240,7 +244,7 @@ commnets <- c(networks[1:5], "lfr")
 for(i in seq_along(commnets)) {
     morediscrete(commnets[i], "doublewell", optcolor, randcolor, labelsize, df, nodesets,
                  show.legend = show.legend[i], show.xlabel = show.xlabel[i], show.ylabel = show.ylabel[i])
-    mtext(paste0("(", letters[i], ")"), cex = 0.75*labelsize, line = -2, adj = 0.01)
+    mtext(paste0("(", letters[i], ")"), cex = 0.75*labelsize, line = 0.3, adj = 0)
 }
 if(save_plots) dev.off()
 

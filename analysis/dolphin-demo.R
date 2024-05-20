@@ -4,7 +4,7 @@
 library(parallel)
 ncores <- detectCores()-1
 library(igraph)
-library(localsolver)
+library(sdn)
 library(optNS)
 
 doublewell1D <- function(t, x, params) {

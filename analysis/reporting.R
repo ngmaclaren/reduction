@@ -31,12 +31,14 @@ all.equal(get_vs(exact), get_vs(solns[1:2]))
 
                                         # GBB
 calc_obj(as.numeric(GBB), GBB.obs)
+calc_obj(as.numeric(GBB), y)
                                         # DART
 calc_obj(as.numeric(DART), DART.obs)
+calc_obj(as.numeric(DART), y)
 
 
                                         # Calculate ε for D <= 0.6
-Ds <- localsolver::.doublewell$Ds
+Ds <- sdn::.doublewell$Ds
 Dsr <- Ds[which(Ds < 0.6)]
 idx <- seq_along(Dsr)
 GBBr <- GBB[idx, ]
@@ -49,7 +51,9 @@ yr <- y[idx]
 calc_obj(Yr[, solns[[1]]$vs], yr)#, Yr)
 sapply(2:4, function(i) calc_obj(rowMeans(Yr[, solns[[i]]$vs]), yr))
 calc_obj(GBBr, GBB.obsr)#, Yr)
+calc_obj(GBBr, yr)
 calc_obj(DARTr, DART.obsr)#, Yr)
+calc_obj(DARTr, yr)
 
                                         # What degree sequence does the n=4 node set have?
 solns[[4]]$ks
@@ -94,3 +98,30 @@ count_smaller <- function(dynamics) {
 
 dyns <- c("doublewell", "mutualistic", "genereg", "SIS")
 rowSums(sapply(dyns, count_smaller)/1000)
+
+
+
+
+#### Testing with DART and GBB
+#### Why is error lower on our objective func when visibly their line is closer to their obj?
+res <- data.frame(
+    SNobs = y,
+    DART = as.numeric(DART),
+    DARTobs = DART.obs,
+    GBB = as.numeric(GBB),
+    GBBobs = GBB.obs
+)
+
+palette("Paired")
+matplot(Ds, res[, c("SNobs", "DART", "DARTobs", "GBB", "GBBobs")],
+        type = "l", lty = 1, col = c("black", 1:4), lwd = 5)
+legend("topleft", bty = "n", lty = 1, col = c("black", 1:4), lwd = 5,
+       legend = c("Unweighted mean state", "DART approx.", "DART obs.", "GBB approx.", "GBB obs."))
+
+res$DARTint <- with(res, cumsum((DART - DARTobs)^2)/(length(DARTobs)*mean(DARTobs)))
+res$DARTintSN <- with(res, cumsum((DART - SNobs)^2)/(length(SNobs)*mean(SNobs)))
+
+matplot(Ds, res[, c("DARTint", "DARTintSN")], type = "l", col = c("red", "blue"), lty = 1, lwd = 5,
+        xlab = "D", ylab = "Cumulative approximation error")
+legend("bottomright", bty = "n", lty = 1, col = c("red", "blue"), lwd = 5,
+       legend = c("DART against its own observable", "DART against the unweighted mean"))

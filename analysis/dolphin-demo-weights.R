@@ -1,7 +1,7 @@
 library(parallel)
 ncores <- detectCores()-1
 library(igraph)
-library(localsolver)
+library(sdn)
 library(optNS)
 ns <- 1:4
 

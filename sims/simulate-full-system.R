@@ -18,7 +18,7 @@ library(parallel)
 ncores <- detectCores()-1
 library(igraph)
 library(deSolve)
-library(localsolver)
+library(sdn)
 
 network <- args$network
 print(network)

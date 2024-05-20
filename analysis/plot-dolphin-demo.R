@@ -17,12 +17,12 @@ imgfile <- "../img/dolphin-demo.pdf"
 colors <- list(
     nodestates = "#babdb6", # adjustcolor("gray60", 0.5),
     systemstate = "#000000", #"gray30",
-    approximation = "#3465a4", #1,
+    approximation = "#729fcf", #1,
     selectednodes = "#73d216", #2,
     GBB = "#edd400", #3,
     DART = "#f57900"#4
 )
-legendtext <- c("Node states", "System state", "Approximation", "Selected nodes", "GBB", "DART")
+legendtext <- c("Node state", "Average state", "SN approximation", "Sentinel nodes", "GBB", "DART")
 
 ht <- 12
 wd <- 9
@@ -41,12 +41,12 @@ par(mfrow = c(3, 2), mar = c(5, 5, 1, 1))
 plot_ns <- function(Ds, Y, color, labelsize) {
     matplot(
         Ds, Y, type = "l", lty = 1, lwd = 0.5, col = color,
-                          xlab = TeX(r"(D)", italic = TRUE), ylab = TeX(r"($x^*$)", italic = TRUE),
+        xlab = TeX(r"(D)", italic = TRUE), ylab = TeX(r"($x^*$)", italic = TRUE),
         cex.lab = labelsize, cex.axis = labelsize
     )
 }
     
-Ds <- localsolver::.doublewell$Ds
+Ds <- sdn::.doublewell$Ds
 for(i in seq_along(solns)) {
     plot_ns(Ds, Y, colors$nodestates, labelsize)
 
@@ -69,12 +69,14 @@ for(i in seq_along(solns)) {
 
 ## GBB
 plot_ns(Ds, Y, colors$nodestates, labelsize)
-lines(Ds, GBB.obs, lty = 1, lwd = 8, col = colors$systemstate)
+lines(Ds, GBB.obs, lty = 1, lwd = 6, col = "#c17d11")
+lines(Ds, y, lty = 1, lwd = 6, col = colors$systemstate)
 lines(Ds, GBB[, 1], lty = 1, lwd = 8, col = colors$GBB)
 placelabel(paste0("(", letters[5], ")"), 0.01, 0.99, adj = c(0, 1), cex = labelsize)
 ## DART
 plot_ns(Ds, Y, colors$nodestates, labelsize)
-lines(Ds, DART.obs, lty = 1, lwd = 8, col = colors$systemstate)
+lines(Ds, DART.obs, lty = 1, lwd = 6, col = "#c17d11")
+lines(Ds, y, lty = 1, lwd = 6, col = colors$systemstate)
 lines(Ds, DART[, 1], lty = 1, lwd = 8, col = colors$DART)
 placelabel(paste0("(", letters[6], ")"), 0.01, 0.99, adj = c(0, 1), cex = labelsize)
 

@@ -55,7 +55,7 @@ plot_ns <- function(Ds, Y, color, labelsize) {
     )
 }
     
-Ds <- localsolver::.doublewell$Ds
+Ds <- sdn::.doublewell$Ds
 for(i in seq_along(solns)) {
     plot_ns(Ds, Y, colors$nodestates, labelsize)
 
