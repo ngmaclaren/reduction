@@ -19,11 +19,11 @@ Our method should run in reasonable time for small networks on a standard laptop
 
 ## Dependencies
 
-In addition to the `optNS` package, we use an in-house differential equation simulation package called [https://github.com/ngmaclaren/sdn](sdn). We use the following standard R repository packages:
-- [https://cran.r-project.org/package=deSolve](deSolve)
-- [https://cran.r-project.org/package=ROI](ROI) 
-- [https://cran.r-project.org/package=ROI.plugin.qpoases](ROI.plugin.qpoases)
-- [https://cran.r-project.org/package=igraph](igraph)
-- [https://cran.r-project.org/doc/manuals/r-release/fullrefman.pdf](parallel)
-- [https://cran.r-project.org/package=optparse](optparse)
-- [https://cran.r-project.org/package=latex2exp](latex2exp) (for the plots in `./analysis`)
+In addition to the `optNS` package, we use an in-house differential equation simulation package called [sdn](https://github.com/ngmaclaren/sdn). We use the following standard R repository packages:
+- [deSolve](https://cran.r-project.org/package=deSolve)
+- [ROI](https://cran.r-project.org/package=ROI)
+- [ROI.plugin.qpoases](https://cran.r-project.org/package=ROI.plugin.qpoases)
+- [igraph](https://cran.r-project.org/package=igraph)
+- [parallel](https://cran.r-project.org/doc/manuals/r-release/fullrefman.pdf)
+- [optparse](https://cran.r-project.org/package=optparse)
+- [latex2exp](https://cran.r-project.org/package=latex2exp) (for the plots in `./analysis`)
