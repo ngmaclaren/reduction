@@ -16,7 +16,7 @@ library(ROI.plugin.qpoases)
 ## This is unfortunately confusing notation, but is used consistently throughout this analysis.
 #' Objective function
 #'
-#' Compute the objective function for optimization.
+#' Compute the objective function for optimization: the mean square error between the approximation z and the observed mean y over the L values of the control parameter. 
 #'
 #' @param z A vector of length L
 #' @param y A vector of length L
@@ -35,12 +35,17 @@ calc_obj <- function(z, y) sum((z - y)^2)/(length(y)*mean(y))
 #' Calculate the approximated mean state for a sample of nodes
 #'
 #' Given a sample of nodes, compute the objective function: the weighted or unweighted mean state of the sample of nodes, normalized appropriately. Can be used on its own or inside optim(). 
-#' @param vs A sample of nodes (numeric or igraph.vs)
+#' @param vs A sample of nodes
 #' @param y The ground truth mean state
 #' @param Y A matrix
 #' @param optimize_weights Logical for whether or not to optimize node weights.
 #' @param ws A vector of node weights, if already obtained
 #' @param ... Container for arguments passed from optim()
+#'
+#' @details
+#' The primary purpose of this function is to handle various features of the provided node set and return the approximation error for that node set. By default this function will 
+#'
+#' For the vector `vs`, it is safer to use the numeric indices of the graph to avoid confusion with vertex names.
 #' 
 #' @return A numeric vector of approximated system states at each value of the bifurcation parameter
 #' 

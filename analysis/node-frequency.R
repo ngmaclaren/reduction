@@ -23,7 +23,6 @@ chisq.test(freqs)
 dev.new()
 plot(k[as.numeric(names(freqs))], as.numeric(freqs), xlab = expression(k[i]), ylab = "Frequency", type = "p")
 
-##select <- as.numeric(names(freqs)[freqs > 10 & k[as.numeric(names(freqs))] <= 10])
 select <- as.numeric(names(freqs)[which.max(freqs)])
 
 k[select]

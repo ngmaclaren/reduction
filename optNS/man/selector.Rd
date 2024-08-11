@@ -92,8 +92,19 @@ make_dl(vs, g, y, Y, k, optimize_weights = FALSE, ws = NULL, sorted = TRUE)
 A list with the following elements: vs: The node set, a numeric vector of node indices; error: The approximation error for the node set; ks: The degree sequence; ws: NULL, or the weights assigned to each node if requested.
 }
 \description{
-A description.
+Each of these functions returns a node set along with some additional information. See details.
 }
 \details{
-Each of these functions returns a node set along with some additional information. See details.
+These functions all accept similar arguments and return the same data structure (i.e., n node indices, the associated approximation error, etc) but differ in the algorithm used to select the nodes. No algorithm accepts repeated nodes in the output.
+\itemize{
+\item select_optimized() uses combinatorial simulated annealing
+\item select_randomized() selects nodes uniformly at random
+\item select_constrained() removes the top 5\% of nodes by degree from consideration, then selects randomly.
+\item select_knn_constrained() removes the bottom 5\% by average nearest neighbor degree and optionally the top 5\xs% by degree, then selects randomly
+\item select_quantiled() divides the degree distribution into n bins and selects one node at random from each bin
+\item select_bycommunity() assigns a weight to each node to encourage, but not require, selecting nodes from different communities.
+\item select_bydegseq() accepts a set of nodes as an argument (\code{comps}) and returns a set of nodes with the same degree sequence, but which is otherwise random.
+}
+
+make_dl() accepts a node set \code{vs} and returns the standard data structure.
 }

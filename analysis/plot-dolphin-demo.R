@@ -15,20 +15,18 @@ placelabel <- function(label, x, y, ...) {
 
 imgfile <- "../img/dolphin-demo.pdf"
 colors <- list(
-    nodestates = "#babdb6", # adjustcolor("gray60", 0.5),
-    systemstate = "#000000", #"gray30",
-    approximation = "#729fcf", #1,
-    selectednodes = "#73d216", #2,
-    GBB = "#edd400", #3,
-    DART = "#f57900"#4
+    nodestates = "#babdb6",
+    systemstate = "#000000", 
+    approximation = "#729fcf", 
+    selectednodes = "#73d216", 
+    GBB = "#edd400", 
+    DART = "#f57900"
 )
 legendtext <- c("Node state", "Average state", "SN approximation", "Sentinel nodes", "GBB", "DART")
 
 ht <- 12
 wd <- 9
 labelsize <- 2
-## palette("Set 1")
-# palette("Tableau 10")
 
 if(save_plots) {
     pdf("../img/dolphin-demo.pdf", height = 12, width = wd)

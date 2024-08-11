@@ -31,6 +31,8 @@ debug/
 
 # any manuscript or related files
 /tex/
+# or any pdf docs, etc.
+/docs/
 
 # the image file dir
 /img/

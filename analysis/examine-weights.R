@@ -1,6 +1,3 @@
-## I want the structural features of each node in a node set (k, knn, lcl, pairs(?))
-## and I want to compare that to the weight assigned to each node.
-
 library(parallel)
 ncores <- detectCores()-1
 library(igraph)

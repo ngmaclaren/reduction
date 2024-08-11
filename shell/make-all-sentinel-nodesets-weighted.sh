@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# networks=(dolphin celegans proximity euroroad email er gkk ba hk lfr)
 networks=(windsurfers macaques train_terrorists highschool drug residence_hall netsci_weighted proximity_weighted gap_junction_herm intl_trade)
 dynamics=(doublewell SIS genereg mutualistic)
 ntrials=100

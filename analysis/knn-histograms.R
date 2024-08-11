@@ -26,9 +26,7 @@ if(save_plots) {
 par(mfrow = c(length(opts), 1), mar = c(4.5, 4.5, 1.5, 0.5))
 for(i in seq_along(opts)) {
     pd.opt <- knns[[i]][as.numeric(optNS::get_vs(opts[[i]]))]
-    ## pd.opt <- knns[[i]][colMeans(optNS::get_vs(opts[[i]]))]
     pd.rand <- knns[[i]][as.numeric(optNS::get_vs(rands[[i]]))]
-    ## pd.rand <- knns[[i]][colMeans(optNS::get_vs(rands[[i]]))]
     hist.all <- hist(c(pd.opt, pd.rand), breaks = 20, plot = FALSE)
     hist.opt <- hist(pd.opt, breaks = hist.all$breaks, plot = FALSE)
     hist.rand <- hist(pd.rand, breaks = hist.all$breaks, plot = FALSE)

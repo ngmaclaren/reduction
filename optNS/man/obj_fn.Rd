@@ -7,7 +7,7 @@
 obj_fn(vs, y, Y, optimize_weights = FALSE, ws = NULL, ...)
 }
 \arguments{
-\item{vs}{A sample of nodes (numeric or igraph.vs)}
+\item{vs}{A sample of nodes}
 
 \item{y}{The ground truth mean state}
 
@@ -25,6 +25,11 @@ A numeric vector of approximated system states at each value of the bifurcation 
 \description{
 Given a sample of nodes, compute the objective function: the weighted or unweighted mean state of the sample of nodes, normalized appropriately. Can be used on its own or inside optim().
 }
+\details{
+The primary purpose of this function is to handle various features of the provided node set and return the approximation error for that node set. By default this function will
+
+For the vector \code{vs}, it is safer to use the numeric indices of the graph to avoid confusion with vertex names.
+}
 \seealso{
-[calc_obj()]
+\code{\link[=calc_obj]{calc_obj()}}
 }

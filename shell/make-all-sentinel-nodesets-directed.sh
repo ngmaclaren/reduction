@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# networks=(dolphin celegans proximity euroroad email er gkk ba hk lfr)
 networks=(email_uni usair yeast physician_trust jung-c flamingo faa email_company ecoli canton)
 dynamics=(doublewell SIS genereg mutualistic)
 ntrials=100

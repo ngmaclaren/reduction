@@ -27,7 +27,7 @@ sample.frombins <- function(bins) {
 
 #' Functions to select sentinel node sets
 #'
-#' Each of these functions returns a node set along with some additional information. See details.
+#' @description Each of these functions returns a node set along with some additional information. See details.
 #'
 #' @param n The number of nodes to use in the node set.
 #' @param g The network from which the nodes will be drawn. 
@@ -45,7 +45,16 @@ sample.frombins <- function(bins) {
 #'
 #' @name selector
 #'
-#' @description A description.
+#' @details These functions all accept similar arguments and return the same data structure (i.e., n node indices, the associated approximation error, etc) but differ in the algorithm used to select the nodes. No algorithm accepts repeated nodes in the output. 
+#' - select_optimized() uses combinatorial simulated annealing
+#' - select_randomized() selects nodes uniformly at random
+#' - select_constrained() removes the top 5\% of nodes by degree from consideration, then selects randomly.
+#' - select_knn_constrained() removes the bottom 5\% by average nearest neighbor degree and optionally the top 5\% by degree, then selects randomly
+#' - select_quantiled() divides the degree distribution into n bins and selects one node at random from each bin
+#' - select_bycommunity() assigns a weight to each node to encourage, but not require, selecting nodes from different communities.
+#' - select_bydegseq() accepts a set of nodes as an argument (`comps`) and returns a set of nodes with the same degree sequence, but which is otherwise random.
+#'
+#' make_dl() accepts a node set `vs` and returns the standard data structure.
 #'
 #' @return A list with the following elements: vs: The node set, a numeric vector of node indices; error: The approximation error for the node set; ks: The degree sequence; ws: NULL, or the weights assigned to each node if requested.
 NULL

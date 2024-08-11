@@ -2,13 +2,13 @@ library(latex2exp)
 library(sfsmisc)
 get_error <- optNS::get_error
 
-save_plots <- FALSE # TRUE
-two_panels <- TRUE # FALSE
+save_plots <- TRUE # FALSE
+two_panels <- FALSE # TRUE
 optweights <- "no" # "yes"
 use_weighted_networks <- FALSE # TRUE
 use_directed_networks <- FALSE # TRUE
 
-dynamics <- "doublewell" # genereg SIS genereg mutualistic
+dynamics <- "mutualistic" # doublewell SIS genereg mutualistic
 
 networks <- c(
     "dolphin", "celegans", "proximity", "euroroad", "email", "er", "ba", "hk", "gkk", "lfr"
@@ -116,13 +116,6 @@ if(two_panels) {
         title(xlab = "Approximation error", cex.lab = labelsize)
         axis(2, at = yticks$pos, labels = yticks$labels, tick = TRUE, las = 2, cex.axis = 0.75*labelsize)
         placelabel(paste0("(", letters[i], ")"), 0.01, 0.99, adj = c(0, 1), cex = labelsize)
-        ## if(i == 1) {
-        ##     legend(
-        ##         "topright", bty = "n", col = c("#3584e4", "#ff7800", "#33d17a"), #col = 1:3,
-        ##         pch = c(1, 2, 0), pt.cex = 1.5, cex = 1.5, pt.lwd = 2,
-        ##         legend = c("Optimized", "Degree-preserving random", "Completely random")
-        ##     )
-        ## }
     }
 
     if(save_plots) dev.off()
@@ -140,13 +133,12 @@ if(two_panels) {
     par(mfcol = c(length(networks)/2, 2), mar = c(2, .5, .5, .5))
     for(i in seq_along(networks)) {
         plotit(allerrors[[i]])
-        ##eaxis(1, axTicks(1)[c(TRUE, FALSE)], cex.axis = labelsize, at.small = FALSE, sub10 = "10")
         box()
         eaxis(1, n.axp = 1, cex.axis = labelsize)
-        placelabel(paste0("(", letters[i], ")"), 0.01, 0.99, adj = c(0, 1), cex = labelsize)
+        placelabel(paste0("(", letters[i], ")"), 0.01, 0.95, adj = c(0, 1), cex = labelsize)
         if(i == 1) {
             legend(
-                "topright", bty = "n", col = c("#3584e4", "#ff7800", "#33d17a"), #col = 1:3,
+                "topright", bty = "n", col = c("#3584e4", "#ff7800", "#33d17a"), 
                 pch = c(1, 2, 0), pt.cex = 1.5, cex = 1.5, pt.lwd = 2,
                 legend = c("Optimized", "Degree-preserving random", "Completely random")
             )
@@ -156,29 +148,3 @@ if(two_panels) {
     if(save_plots) dev.off()
 }
 
-## plotit <- function(dl) {
-##     dens <- lapply(dl[1:3], function(x) density(x, bw = "SJ"))
-##     idxs <- lapply(dens, function(d) which(d$x > 0 & d$y > 10^(-4)))
-
-##     plotx <- mapply(function(d, i) d$x[i], dens, idxs, SIMPLIFY = FALSE)
-##     ploty <- mapply(function(d, i) d$y[i], dens, idxs, SIMPLIFY = FALSE)
-    
-##     xlim <- range(unlist(plotx))
-##     ylim <- range(unlist(ploty))
-
-##     plot(NULL, xlim = xlim, ylim = ylim, axes = FALSE, xlab = "", ylab = "")#, log = "xy")
-##     lines(plotx$opt, ploty$opt, col = "#3584e4", lwd = 3)
-##     lines(plotx$fixed, ploty$fixed, col = "#ff7800", lwd = 3)
-##     lines(plotx$rand, ploty$rand, col = "#33d17a", lwd = 3)
-## }
-
-## plotit <- function(dl) {
-##     hists <- lapply(dl[1:3], function(x) hist(x, plot = FALSE))
-
-##     xlim <- range(unlist(lapply(hists, `[[`, "breaks")))
-##     ylim <- c(0, max(unlist(lapply(hists, `[[`, "counts"))))
-
-##     plot(hists$rand, col = "#33d17a", xlim = xlim, ylim = ylim)
-##     plot(hists$fixed, col = "#ff7800", add = TRUE)
-##     plot(hists$opt, col = "#3584e4", add = TRUE)
-## y}

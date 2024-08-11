@@ -15,7 +15,7 @@ calc_obj(z, y)
 A scalar
 }
 \description{
-Compute the objective function for optimization.
+Compute the objective function for optimization: the mean square error between the approximation z and the observed mean y over the L values of the control parameter.
 }
 \details{
 This function expects that some mean state, y, can be or has been computed for a system. The function then tests the approximation, z, against the true mean state, y. The objective function is the sum of squared errors between z and y, normalized by the length L times the grand mean (the mean of y). The value that it returns is the approximation error for the given approximation z to the true mean state y.

@@ -12,7 +12,7 @@
 #'
 #' Algorithms select nodes by the following methods: 'opt', combinatorial simulated annealing; 'rand', uniformly at random; 'fixed', uniformly at random, except that a provided vector of nodes specifies the degree sequence; 'constr', uniformly random, except that the largest 5\% of nodes, by degree, are removed from consideration; 'quant', as constr, but additionally selecting one node at random from n 'bins' of the degree distribution; 'comm', as constr, but preferring to select nodes from different communities.
 #' @return A list of node sets.
-#' @seealso [select_optimized()]
+#' @seealso The family of functions which select node sets, which can be found here: [select_optimized()].
 #' @export
 make_dataset <- function(ntrials,
                          ns.type = c("opt", "rand", "fixed", "constr", "quant", "comm", "knnconstr"),

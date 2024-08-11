@@ -16,17 +16,9 @@ find_exact <- function(n, ...) {
     error <- errors[idx]
     ks <- k[vs]
 
-    ## if(optimize_weights) ws <- quadoptm(vs, y, Y)
-
-    ## if(optimize_weights) {
-    ##     return(list(vs = vs, error = error, ks = ks, ws = ws))
-    ## } else {
     return(list(vs = vs, error = error, ks = ks))
-    ##}
 }
 exact <- list(find_exact(1, y, Y, Ds), find_exact(2, y, Y, Ds))
-## get_vs(exact)
-## get_vs(solns[1:2])
 all.equal(get_vs(exact), get_vs(solns[1:2]))
 
                                         # GBB
@@ -48,11 +40,11 @@ DART.obsr <- DART.obs[idx]
 Yr <- Y[idx, ]
 yr <- y[idx]
 
-calc_obj(Yr[, solns[[1]]$vs], yr)#, Yr)
+calc_obj(Yr[, solns[[1]]$vs], yr)
 sapply(2:4, function(i) calc_obj(rowMeans(Yr[, solns[[i]]$vs]), yr))
-calc_obj(GBBr, GBB.obsr)#, Yr)
+calc_obj(GBBr, GBB.obsr)
 calc_obj(GBBr, yr)
-calc_obj(DARTr, DART.obsr)#, Yr)
+calc_obj(DARTr, DART.obsr)
 calc_obj(DARTr, yr)
 
                                         # What degree sequence does the n=4 node set have?
@@ -99,11 +91,7 @@ count_smaller <- function(dynamics) {
 dyns <- c("doublewell", "mutualistic", "genereg", "SIS")
 rowSums(sapply(dyns, count_smaller)/1000)
 
-
-
-
 #### Testing with DART and GBB
-#### Why is error lower on our objective func when visibly their line is closer to their obj?
 res <- data.frame(
     SNobs = y,
     DART = as.numeric(DART),

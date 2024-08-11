@@ -58,7 +58,6 @@ if(show_axis_labels) {
     par(mar = c(2.75, 2.75, 0.25, 0.25))
 }
 
-##for(i in seq(nrow(conds))) {
 eqs <- list(
     eqno = 1:4,
     dynamics = dyns,
@@ -70,9 +69,6 @@ eqs <- list(
         expression(frac(d*x[i], d*t) == -B*x[i]^f + D*sum(a[ij]*frac(x[j]^h, 1 + x[j]^h), j=1, N))
     )
 )
-
-## plot(NULL, xlim = c(0, 4), ylim = c(0, 5), xlab = "", ylab = "")
-## text(rep(0, 4), eqs$eqno, labels = eqs$model, adj = 0)
 
 i <- 1
 eq <- 1
@@ -118,9 +114,6 @@ for(pltno in seq(16)) {
 if(save_plots) dev.off()
 
 library(latex2exp)
-## Get node set S for dynA = SIS
-## Then make bif plots for S on SIS and S on double-well.
-## Choose the best S for SIS.
 ns <- readRDS("../data/ns-dolphin_doublewell.rds")$opt # SIS
 S <- ns[[which.min(get_error(ns))]]
 g <- readRDS("../data/dolphin.rds")
@@ -140,8 +133,7 @@ if(save_plots) {
 }
 par(mar = c(5, 5, 1, 1))
 matplot(
-    Ds, Ylist$SIS, type = "l", lty = 1, lwd = 0.5, col = "#babdb6",
-    ## xlab = expression(D), ylab = expression(x^*),
+    Ds, Ylist$SIS, type = "l", lty = 1, lwd = 0.5, col = "#babdb6", ylim = c(0, 1),
     xlab = TeX(r"(D)", italic = TRUE), ylab = TeX(r"($x^*$)", italic = TRUE),
     font.lab = 3, cex.lab = ls2, cex.axis = ls2
 )
@@ -159,7 +151,6 @@ if(save_plots) {
 par(mar = c(5, 5, 1, 1))
 matplot(
     Ds, Ylist$doublewell, type = "l", lty = 1, lwd = 0.5, col = "#babdb6",
-    ## xlab = expression(D), ylab = expression(x^*),
     xlab = TeX(r"(D)", italic = TRUE), ylab = TeX(r"($x^*$)", italic = TRUE),
     font.lab = 3, cex.lab = ls2, cex.axis = ls2
 )

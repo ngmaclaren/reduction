@@ -30,7 +30,7 @@ dolphin.kposs <- seq(1, max(dolphin.k))
 ba <- readRDS("../data/ba.rds")
 ba.N <- vcount(ba)
 ba.k <- degree(ba)
-ba.kposs <- seq(1, max(ba.k)) # as.numeric(names(table(ba.k))) may work here as well
+ba.kposs <- seq(1, max(ba.k))
 
 dolphin.opts <- readRDS("../data/dolphin-1-to-12.rds")
 ba.opts <- readRDS("../data/ba-4.rds")
@@ -56,7 +56,6 @@ if(save_plots) {
 } else {
     dev.new(height = ht, width = wd)
 }
-## par(mfcol = c(5, 2), mar = c(4, 4, 2, 1) + 0.5)
 
 dims <- c(5, 2)
 subdims <- c(0.4, 0.9, 0.4, 0.9)

@@ -29,8 +29,8 @@ Make a list of node sets (and some additional information) according to a specif
 \details{
 This function generates several realizations of a given algorithm, optionally with optimized node weights. See the manual page for each function for the required arguments.
 
-Algorithms select nodes by the following methods: 'opt', combinatorial simulated annealing; 'rand', uniformly at random; 'fixed', uniformly at random, except that a provided vector of nodes specifies the degree sequence; 'constr', uniformly random, except that the largest 5\% of nodes, by degree, are removed from consideration; 'quant', as constr, but additionally selecting one node at random from n 'bins' of the degree distribution; 'comm', as constr, but preferring to select nodes from different communities.
+Algorithms select nodes by the following methods: 'opt', combinatorial simulated annealing; 'rand', uniformly at random; 'fixed', uniformly at random, except that a provided vector of nodes specifies the degree sequence; 'constr', uniformly random, except that the largest 5\\% of nodes, by degree, are removed from consideration; 'quant', as constr, but additionally selecting one node at random from n 'bins' of the degree distribution; 'comm', as constr, but preferring to select nodes from different communities.
 }
 \seealso{
-[select_optimized()]
+\code{\link[=select_optimized]{select_optimized()}}
 }

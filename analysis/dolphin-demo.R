@@ -1,5 +1,4 @@
 ## This file will output an .RData file
-## I need n %in% c(1, 2, 3, 4), plus GBB and DART. I at least need to compute the error for GBB and DART, whether I plot it or not.
 
 library(parallel)
 ncores <- detectCores()-1

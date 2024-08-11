@@ -14,7 +14,7 @@ quadoptm(vs, y, Y)
 \item{Y}{The state of each node (in columns) at each level of the bifurcation parameter (rows)}
 }
 \value{
-A vector of weights for the nodes in `vs`.
+A vector of weights for the nodes in \code{vs}.
 }
 \description{
 Optimization of node weights by quadratic programming, using ROI and the qpoases algorithm.
