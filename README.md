@@ -11,7 +11,7 @@ The built package is also included as `optNS_0.1-1.tar.gz`. To install, use
 R CMD INSTALL optNS_0.1-1.tar.gz
 ```
 
-The documentation for this package is a work in progress. Please contact me with any questions.
+Please contact me with any questions.
 
 ## Shell scripts for high-performance computing clusters
 
