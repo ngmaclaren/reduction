@@ -3,6 +3,10 @@ optionlist <- list(
     make_option(
         "--network", type = "character", default = "dolphin",
         help = "The network on which to compare each dynamics. Default is %default. Options: 'dolphin', 'celegans', 'proximity', 'euroroad', 'email', 'er', 'gkk', 'ba', 'hk', 'lfr'."
+    ),
+    make_option(
+        "--ncparam", type = "numeric", default = 100,
+        help = "The number of evenly spaced control parameter values to sample from the range. In this study, the only control parameter is D and the range is [0, 1] for doublewell, SIS, and genereg but [0, 3] for mutualistic."
     )
 )
 args <- parse_args(
@@ -11,7 +15,8 @@ args <- parse_args(
 )
 
 if(interactive()) {
-    args$network <- "flamingo" # residence_hall, macaques, highschool
+    args$network <- "dolphin"
+    args$ncparam <- 25
 }
 
 library(parallel)
@@ -21,8 +26,10 @@ library(deSolve)
 library(sdn)
 
 network <- args$network
+ncparam <- args$ncparam
 print(network)
-fullstatefile <- paste0("../data/fullstate-", network, ".rds")
+print(ncparam)
+fullstatefile <- paste0("../data/fullstate-", network, "-L", ncparam, ".rds")
 
 g <- readRDS(paste0("../data/", network, ".rds"))
 N <- vcount(g)
@@ -40,6 +47,7 @@ Y.doublewell <- with(
         params = c(.doublewell, list(A = A)),
         control = list(times = times, ncores = ncores)
     ), {
+        params$Ds <- seq(0, 1, length.out = ncparam)
         solve_in_range(params$Ds, "D", doublewell, rep(params$xinit.low, N), params, control, "ode")
     }
 )
@@ -50,6 +58,7 @@ Y.SIS <- with(
         params = c(.SIS, list(A = A)),
         control = list(times = times, ncores = ncores)
     ), {
+        params$Ds <- seq(0, 1, length.out = ncparam)
         solve_in_range(params$Ds, "D", SIS, rep(params$xinit.low, N), params, control, "ode")
     }
 )
@@ -60,6 +69,7 @@ Y.genereg <- with(
         params = c(.genereg, list(A = A)),
         control = list(times = times, ncores = ncores)
     ), {
+        params$Ds <- seq(0, 1, length.out = ncparam)
         solve_in_range(params$Ds, "D", genereg, rep(params$xinit.high, N), params, control, "ode")
     }
 )
@@ -70,6 +80,7 @@ Y.mutualistic <- with(
         params = c(.mutualistic, list(A = A)),
         control = list(times = times, ncores = ncores)
     ),  {
+        params$Ds <- seq(0, 3, length.out = ncparam)
         solve_in_range(params$Ds, "D", mutualistic, rep(params$xinit.low, N), params, control, "ode")
     }
 )
