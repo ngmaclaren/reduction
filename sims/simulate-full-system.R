@@ -15,7 +15,7 @@ args <- parse_args(
 )
 
 if(interactive()) {
-    args$network <- "dolphin"
+    args$network <- "BAtest50"
     args$ncparam <- 25
 }
 
@@ -29,7 +29,8 @@ network <- args$network
 ncparam <- args$ncparam
 print(network)
 print(ncparam)
-fullstatefile <- paste0("../data/fullstate-", network, "-L", ncparam, ".rds")
+## fullstatefile <- paste0("../data/fullstate-", network, "-L", ncparam, ".rds")
+fullstatefile <- paste0("../data/fullstate-", network, ".rds")
 
 g <- readRDS(paste0("../data/", network, ".rds"))
 N <- vcount(g)
@@ -93,4 +94,7 @@ fullstate <- list(
 )
 
 attr(fullstate, "graph") <- g
+
+objs <- sum(sapply(ls(), function(nomen) object.size(get(nomen))))
+print(paste(round(objs/1024^2, 2), "Mb"))
 saveRDS(fullstate, file = fullstatefile)

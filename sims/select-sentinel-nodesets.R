@@ -29,7 +29,7 @@ args <- parse_args(
 )
 
 if(interactive()) {
-    args$network <- "flamingo"
+    args$network <- "BAtest50"
     args$dynamics <- "doublewell"
     args$ntrials <- 3
     args$optimize_weights <- FALSE # TRUE
