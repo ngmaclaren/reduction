@@ -60,7 +60,7 @@ outfile <- paste0("../data/ns-", cond, ".rds")
 
 g <- readRDS(paste0("../data/", network, ".rds"))
 N <- vcount(g)
-A <- as_adj(g, "both", sparse = FALSE)
+AL <- as_adj_list(g, "all")
 
 Y <- readRDS(fullstatefile)[[dynamics]]
 y <- rowMeans(Y)

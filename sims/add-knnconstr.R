@@ -20,7 +20,7 @@ add_knnconstr <- function(network, dynamics, ntrials, optweights) {
 
     g <- readRDS(paste0("../data/", network, ".rds"))
     N <- vcount(g)
-    A <- as_adj(g, "both", sparse = FALSE)
+    AL <- as_adj_list(g, "all")
     k <- degree(g)
     knn <- knn(g)$knn
     

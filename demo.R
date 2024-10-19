@@ -12,7 +12,6 @@ fullstatefile <- paste0("./data/fullstate-", network, ".rds")
 
 g <- readRDS(paste0("./data/", network, ".rds"))
 N <- vcount(g)
-## A <- as_adj(g, "both", sparse = FALSE)
 
 Y <- readRDS(fullstatefile)[[dynamics]]
 y <- rowMeans(Y)

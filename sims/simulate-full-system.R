@@ -14,16 +14,16 @@ args <- parse_args(
     convert_hyphens_to_underscores = TRUE
 )
 
-if(interactive()) {
-    args$network <- "BAtest50"
-    args$ncparam <- 25
-}
-
 library(parallel)
 ncores <- detectCores()-1
 library(igraph)
 library(deSolve)
 library(sdn)
+
+if(interactive()) {
+    args$network <- "celegans"
+    args$ncparam <- ncores
+}
 
 network <- args$network
 ncparam <- args$ncparam
@@ -34,18 +34,19 @@ fullstatefile <- paste0("../data/fullstate-", network, ".rds")
 
 g <- readRDS(paste0("../data/", network, ".rds"))
 N <- vcount(g)
-if(is_weighted(g)) {
-    A <- as_adj(g, "both", attr = "weight", sparse = FALSE)
-} else {
-    A <- as_adj(g, "both", sparse = FALSE)
-}
+## if(is_weighted(g)) {
+##     A <- as_adj(g, "both", attr = "weight", sparse = FALSE)
+## } else {
+##     A <- as_adj(g, "both", sparse = FALSE)
+## }
+AL <- as_adj_list(g, "all")
 
 times <- 0:15 # for all? was 0:20 for SIS?
 
 print("solving doublewell...")
 Y.doublewell <- with(
     list(
-        params = c(.doublewell, list(A = A)),
+        params = c(.doublewell, list(AL = AL)),
         control = list(times = times, ncores = ncores)
     ), {
         params$Ds <- seq(0, 1, length.out = ncparam)
@@ -56,7 +57,7 @@ Y.doublewell <- with(
 print("solving SIS...")
 Y.SIS <- with(
     list(
-        params = c(.SIS, list(A = A)),
+        params = c(.SIS, list(AL = AL)),
         control = list(times = times, ncores = ncores)
     ), {
         params$Ds <- seq(0, 1, length.out = ncparam)
@@ -67,7 +68,7 @@ Y.SIS <- with(
 print("solving gene regulatory...")
 Y.genereg <- with(
     list(
-        params = c(.genereg, list(A = A)),
+        params = c(.genereg, list(AL = AL)),
         control = list(times = times, ncores = ncores)
     ), {
         params$Ds <- seq(0, 1, length.out = ncparam)
@@ -78,7 +79,7 @@ Y.genereg <- with(
 print("solving mutualistic species...")
 Y.mutualistic <- with(
     list(
-        params = c(.mutualistic, list(A = A)),
+        params = c(.mutualistic, list(AL = AL)),
         control = list(times = times, ncores = ncores)
     ),  {
         params$Ds <- seq(0, 3, length.out = ncparam)
