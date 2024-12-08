@@ -21,6 +21,10 @@ optionlist <- list(
     make_option(
         "--optimize-weights", type = "character", default = "false",
         help = "Whether or not to optimize the node weights. Default is %default, set to 'true' or 'false'."
+    ),
+    make_option(
+        "--whichhalf", type = "character", default = "first",
+        help = "Default is %default. Use either first or last. Only for separating file names---has no other effect."
     )
 )
 args <- parse_args(
@@ -29,7 +33,7 @@ args <- parse_args(
 )
 
 if(interactive()) {
-    args$network <- "BAtest50"
+    args$network <- "prosper"
     args$dynamics <- "doublewell"
     args$ntrials <- 3
     args$optimize_weights <- FALSE # TRUE
@@ -48,6 +52,7 @@ network <- args$network
 dynamics <- args$dynamics
 ntrials <- as.numeric(args$ntrials)
 optimize_weights <- as.logical(toupper(args$optimize_weights))
+whichhalf <- args$whichhalf
 
 if(optimize_weights) {
     cond <- paste(c(network, dynamics, "w"), collapse = "_")
@@ -56,7 +61,7 @@ if(optimize_weights) {
 }
 print(cond)
 fullstatefile <- paste0("../data/fullstate-", network, ".rds")
-outfile <- paste0("../data/ns-", cond, ".rds")
+outfile <- paste0("../data/ns-", cond, "-", whichhalf, ".rds")
 
 g <- readRDS(paste0("../data/", network, ".rds"))
 N <- vcount(g)
@@ -67,10 +72,20 @@ y <- rowMeans(Y)
 n <- floor(log(N))
 
 ## main call
-opts <- make_dataset(
-    ntrials = ntrials, ns.type = "opt", ncores = ncores,
-    n = n, g = g, y = y, Y = Y, optimize_weights = optimize_weights
+runtime <- system.time(
+    opts <- make_dataset(
+        ntrials = ntrials, ns.type = "opt", ncores = ncores,
+        n = n, g = g, y = y, Y = Y, optimize_weights = optimize_weights
+    )
 )
+
+
+                                        # For timing the SA alg
+timingDF <- data.frame(
+    network = network, N = N, dynamics = dynamics, whichhalf = whichhalf, optweight = optimize_weights, runtime = as.numeric(runtime[3])
+)
+
+write.csv(timingDF, paste0("../shell/output/ns-times/", cond, "-", whichhalf, ".csv"), row.names = FALSE)
 
 best <- opts[[which.min(get_error(opts))]]
 

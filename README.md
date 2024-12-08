@@ -15,11 +15,12 @@ Please contact me with any questions.
 
 ## Shell scripts for high-performance computing clusters
 
-Our method should run in reasonable time for small networks on a standard laptop (I use a laptop with four Intel i3-5010U CPUs at 2.10GHz). In order to support larger networks we used a high-performance computing cluster to simulate node states across ranges of control parameters (our "ground truth" simulations) and to optimize node sets. The shell scripts we used to do this are in `./shell/` and will need to be modified for your parallel computing environment. 
+Our method should run in reasonable time for small networks on a standard laptop (I use a laptop with four Intel i3-5010U CPUs at 2.10GHz). In order to support larger networks we used a high-performance computing cluster to simulate node states across ranges of control parameters (our "ground truth" simulations) and to optimize node sets. The shell scripts we used to do this are in `./shell/` and will need to be modified for your parallel computing environment.
 
 ## Dependencies
 
 In addition to the `optNS` package, we use an in-house differential equation simulation package called [sdn](https://github.com/ngmaclaren/sdn). We use the following standard R repository packages:
+
 - [deSolve](https://cran.r-project.org/package=deSolve)
 - [ROI](https://cran.r-project.org/package=ROI)
 - [ROI.plugin.qpoases](https://cran.r-project.org/package=ROI.plugin.qpoases)
