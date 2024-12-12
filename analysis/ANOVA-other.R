@@ -1,9 +1,11 @@
 use_weighted_networks <- FALSE # TRUE
-use_directed_networks <- TRUE # FALSE
+use_directed_networks <- FALSE # TRUE
 
 networks <- c(
                                         # Exclude ER
-    "dolphin", "proximity", "celegans", "euroroad", "email", "gkk", "ba", "hk", "lfr" # , "er"
+    "dolphin", "proximity", "celegans", "euroroad", "email", "gkk", "ba", "hk", "lfr", # , "er"
+    "drosophila", "reactome", "route_views", "spanish", "foldoc", "tree_of_life", "word_assoc",
+    "enron", "marker_cafe", "prosper"
 )
 weighted <- c(
     "windsurfers", "macaques", "train_terrorists", "highschool", "drug", "residence_hall", "netsci_weighted",
@@ -80,15 +82,16 @@ df$network <- factor(df$network, levels = networks)
 df$dynamicsA <- factor(df$dynamicsA, levels = dynamics)
 df$dynamicsB <- factor(df$dynamicsB, levels = dynamics)
 df$ns.type <- factor(df$ns.type, levels = c("rand", "opt", "fixed", "constr", "quant", "knnconstr", "comm"))
+df$logerror <- log(df$error)
 
 ## model.glm <- glm(log(error) ~ network + dynamicsA + dynamicsB + ns.type, data = df, family = gaussian)
-model.aov <- aov(log(error) ~ network + dynamicsA + dynamicsB + ns.type, data = df)
-model.lm <- lm(log(error) ~ network + dynamicsA + dynamicsB + ns.type, data = df)
+system.time(model.aov <- aov(logerror ~ network + dynamicsA + dynamicsB + ns.type, data = df))
+system.time(model.lm <- lm(logerror ~ network + dynamicsA + dynamicsB + ns.type, data = df))
 
 summary(model.lm)$r.squared
 anova(model.aov)
 ## summary(model.glm)
-TukeyHSD(model.aov, "ns.type")
+sytem.time(TukeyHSD(model.aov, "ns.type"))
 ## 1 - (model.glm$deviance/model.glm$null.deviance)
 ## exp(coef(model.glm))
 ## 1/exp(coef(model.glm))

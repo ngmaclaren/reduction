@@ -2,15 +2,18 @@
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=26
-#SBATCH --mem=100000 # check the hardware here. I think it would be better as 100000
+#SBATCH --cpus-per-task=52
+#SBATCH --mem=100000
 
 # job-name and output go in the top file
-#SBATCH --mail-user=neilmacl@buffalo.edu
+#SBATCH --mail-user=neil.g.maclaren@gmail.com # neilmacl@buffalo.edu
 #SBATCH --mail-type=ALL
 #SBATCH --partition=general-compute
 #SBATCH --qos=general-compute
 #SBATCH --cluster=ub-hpc
+
+# for timing purposes, constrain the hardware
+#SBATCH --constraint=CPU-Gold-6448Y
 
 module load gcc openmpi r
 
@@ -18,5 +21,6 @@ network=$1
 dynamics=$2
 ntrials=$3
 optweights=$4
+half=$5
 
-Rscript ../sims/select-sentinel-nodesets.R --network=$network --dynamics=$dynamics --ntrials=$ntrials --optimize-weights=$optweights
+Rscript ../sims/select-sentinel-nodesets.R --network=$network --dynamics=$dynamics --ntrials=$ntrials --optimize-weights=$optweights --whichhalf=$half
