@@ -123,9 +123,9 @@ legend(
         "DART observable",#, 1-D",
         ##"DART observable, 2-D",
         ##"DART observable, 3-D",
-        "DART approx., 1-D",
-        "DART approx., 2-D",
-        "DART approx., 3-D"
+        "DART approx., 1-dim",
+        "DART approx., 2-dim",
+        "DART approx., 3-dim"
     )
 )
 if(save_plots) dev.off()
