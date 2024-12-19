@@ -1,5 +1,7 @@
 This repository contains code to select optimized sentinel node sets which can closely approximate the state of all network nodes, as well as simulation and analysis code which produced the findings in our manuscript. See below for an example analysis.
 
+NB: As of 2024-12-19 this repository currently stores a lot of data. We expect to reduce the data usage in the near future.
+
 ## optNS 
 
 The `optNS` package is a small R package which implements our optimization algorithm; the name of the package is simply short for "optimize node sets." The `./optNS/` directory contains the code, which you can build with
