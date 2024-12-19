@@ -1,5 +1,6 @@
 use_weighted_networks <- FALSE # TRUE
-use_directed_networks <- FALSE # TRUE
+use_directed_networks <- TRUE # FALSE
+exclude_heuristic <- TRUE # FALSE
 
 networks <- c(
                                         # Exclude ER
@@ -21,11 +22,14 @@ if(use_directed_networks) networks <- directed
                                         # Use all dynamics
 dynamics <- c("doublewell", "SIS", "mutualistic", "genereg")
 ns.types <- c("opt", "fixed", "rand", "constr", "quant", "knnconstr", "comm")
-                                        # The different ns.types need different handling
-                                        # These two we need for each dynamics
-names.ns.opt <- c("opt", "fixed")
-                                        # These we'll just use the [network]_doublewell node sets
-names.ns.heur <- c("rand", "constr", "quant", "knnconstr", "comm")
+
+                                        # wound up handling this a different way...
+##
+##                                         # The different ns.types need different handling
+##                                         # These two we need for each dynamics
+## names.ns.opt <- c("opt", "fixed")
+##                                         # These we'll just use the [network]_doublewell node sets
+## names.ns.heur <- c("rand", "constr", "quant", "knnconstr", "comm")
 
 names.ns.all <- apply(expand.grid(networks, dynamics), 1, function(row) paste(row, collapse = "_"))
 
@@ -42,6 +46,11 @@ colnames(conds) <- c("network", "dynamicsA", "dynamicsB", "ns.type")
                                         # exclude cases in which A=B
 dups <- apply(conds, 1, function(row) any(duplicated(row)))
 conds <- conds[!dups, ]
+
+if(exclude_heuristic) {
+    retain <- c("opt", "fixed", "rand")
+    conds <- conds[conds$ns.type %in% retain, ]
+}
 
 collect_errors <- function(row, nodesets, fullstates) {
     network <- row[1]
@@ -91,7 +100,7 @@ system.time(model.lm <- lm(logerror ~ network + dynamicsA + dynamicsB + ns.type,
 summary(model.lm)$r.squared
 anova(model.aov)
 ## summary(model.glm)
-sytem.time(TukeyHSD(model.aov, "ns.type"))
+round(TukeyHSD(model.aov, "ns.type")$ns.type, 3)
 ## 1 - (model.glm$deviance/model.glm$null.deviance)
 ## exp(coef(model.glm))
 ## 1/exp(coef(model.glm))

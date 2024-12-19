@@ -1,5 +1,6 @@
 use_weighted_networks <- FALSE # TRUE
-use_directed_networks <- FALSE # TRUE
+use_directed_networks <- TRUE # FALSE
+exclude_heuristic <- TRUE # FALSE
 
 networks <- c(
                                         # Exclude ER
@@ -32,6 +33,11 @@ names(nodesets) <- names.ns.all
 
 conds <- expand.grid(networks, dynamics, ns.types, stringsAsFactors = FALSE)
 colnames(conds) <- c("network", "dynamics", "ns.type")
+
+if(exclude_heuristic) {
+    retain <- c("opt", "fixed", "rand")
+    conds <- conds[conds$ns.type %in% retain, ]
+}
 
 collect_errors <- function(row, nodesets, fullstates) {
     network <- row[1]
@@ -78,10 +84,10 @@ system.time(model.lm <- lm(logerror ~ network + dynamics + ns.type, data = df))
 summary(model.lm)$r.squared
 anova(model.aov)
 ## summary(model.glm)
-TukeyHSD(model.aov, "ns.type")
+round(TukeyHSD(model.aov, "ns.type")$ns.type, 3)
 ## 1 - (model.glm$deviance/model.glm$null.deviance)
-exp(coef(model.aov))
-1/exp(coef(model.aov))
+## exp(coef(model.aov))
+## 1/exp(coef(model.aov))
     
 ## exp(coef(model.glm))
 ## 1/exp(coef(model.glm))

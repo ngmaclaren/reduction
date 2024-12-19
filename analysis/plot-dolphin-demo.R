@@ -19,8 +19,8 @@ colors <- list(
     systemstate = "#000000", 
     approximation = "#729fcf", 
     selectednodes = "#73d216", 
-    GBB = "#edd400", 
-    DART = "#f57900"
+    GBB = "#e01b24", 
+    DART = "#ff007f"
 )
 legendtext <- c("Node state", "Average state", "SN approximation", "Sentinel nodes", "GBB", "DART")
 
