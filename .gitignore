@@ -43,6 +43,9 @@ debug/
 # R package build checks
 *.Rcheck
 
+# Python things
+/env/
+
 
 *.svg
 *.ods
