@@ -1,5 +1,4 @@
 library(igraph)
-## library(randomForest)
 library(optNS)
 
 networks <- c(
@@ -10,28 +9,41 @@ networks <- c(
 Ns <- sapply(networks, function(net) vcount(readRDS(paste0("../data/", net, ".rds"))))
 Ms <- sapply(networks, function(net) ecount(readRDS(paste0("../data/", net, ".rds"))))
 
-## rfdf <- data.frame(network = networks, N = Ns, M = Ms)
+dynamics <- c("doublewell", "mutualistic", "SIS", "genereg")
 
 for(network in networks) {
     ## network <- "drosophila"
-    dynamics <- c("doublewell", "mutualistic", "SIS", "genereg")
     vsfile <- paste0("../data/nodefeatures-", network, ".rds")
-    nsfiles <- paste0("../data/ns-", network, "_", dynamics, ".rds")
     csvfile <- paste0("../data/nodefeatures-", network, ".csv")
 
     vs <- readRDS(vsfile) # vertices
-    ## ns <- readRDS(nsfile) # node sets
-    ## ns <- do.call(c, lapply(nsfiles, function(nsfile) readRDS(nsfile)$opt))
-    ns <- do.call(
-        rbind,
-        lapply(dynamics, function(dyn) {
-            opts <- readRDS(paste0("../data/ns-", network, "_", dyn, ".rds"))$opt
-            count <- as.data.frame(table(as.numeric(get_vs(opts))))
-            colnames(count)[1] <- "v"
-            count$dynamics <- dyn
-            count
-        })
-    )
+
+    dfs <- lapply(dynamics, function(dyn) {
+        opts <- readRDS(paste0("../data/ns-", network, "_", dyn, ".rds"))$opt
+        count <- as.data.frame(table(as.numeric(get_vs(opts))))
+        colnames(count)[1] <- "v"
+        df <- merge(vs, count, by = "v", all.x = TRUE)
+        df$Freq[is.na(df$Freq)] <- 0
+        df$N <- Ns[network]
+        df$M <- Ms[network]
+        df$dynamics <- dyn
+        df
+    })
+
+    df <- do.call(rbind, dfs)
+    
+    write.csv(df, csvfile, row.names = FALSE)
+}
+
+## library(randomForest)
+    ## rfdf <- data.frame(network = networks, N = Ns, M = Ms)
+    ## nsfiles <- paste0("../data/ns-", network, "_", dynamics, ".rds")
+
+    ## df <- merge(vs, ns, by = "v")
+    ## df$Freq[is.na(df$Freq)] <- 0
+    ## df$N <- Ns[network]
+    ## df$M <- Ms[network]
+
 
     ## count <- as.data.frame(table(as.numeric(get_vs(ns$opt))))
     ## count <- as.data.frame(table(as.numeric(get_vs(ns))))
@@ -39,14 +51,35 @@ for(network in networks) {
     ## count$dynamics <- rep(dynamics, each = 100)
 
     ## df <- merge(vs, count, by = "v", all.x = TRUE)
-    df <- merge(vs, ns, by = "v")
-    df$Freq[is.na(df$Freq)] <- 0
-    df$N <- Ns[network]
-    df$M <- Ms[network]
 
-    write.csv(df, csvfile, row.names = FALSE)
-}
+    ## ns <- readRDS(nsfile) # node sets
+    ## ns <- do.call(c, lapply(nsfiles, function(nsfile) readRDS(nsfile)$opt))
+    ## ns <- do.call(
+    ##     rbind,
+    ##     lapply(dynamics, function(dyn) {
+    ##         opts <- readRDS(paste0("../data/ns-", network, "_", dyn, ".rds"))$opt
+    ##         count <- as.data.frame(table(as.numeric(get_vs(opts))))
+    ##         colnames(count)[1] <- "v"
+    ##         count$dynamics <- dyn
+    ##         count
+    ##     })
+    ## )
 
+    ## counts <- lapply(dynamics, function(dyn) {
+    ##     opts <- readRDS(paste0("../data/ns-", network, "_", dyn, ".rds"))$opt
+    ##     count <- as.data.frame(table(as.numeric(get_vs(opts))))
+    ##     colnames(count)[1] <- "v"
+    ##     count$dynamics <- dyn
+    ##     count
+    ## })
+
+    ## dfs <- lapply(counts, function(count) {
+    ##     df <- merge(vs, count, by = "v", all.x = TRUE)
+    ##     df$Freq[is.na(df$Freq)] <- 0
+    ##     df$N <- Ns[network]
+    ##     df$M <- Ms[network]
+    ##     df
+    ## })
 
     ## df$Sel <- as.numeric(df$Freq > 0)
     ## df$Freq <- factor(df$Freq, ordered = TRUE)
