@@ -3,41 +3,74 @@ library(randomForest)
 library(optNS)
 
 networks <- c(
-    ## "dolphin", "proximity", "celegans", "euroroad", "email", "gkk", "ba", "hk", "lfr", "er",
-    ## "drosophila", "reactome", "route_views",
-    ## "spanish",
-    ## "foldoc",
-    ## "tree_of_life",
-    ## "word_assoc",
-    "enron", "marker_cafe", "prosper"
+    "dolphin", "proximity", "celegans", "euroroad", "email", "gkk", "ba", "hk", "lfr", "er",
+    "drosophila", "reactome", "route_views",
+    "spanish",
+    "foldoc"
+    ## "tree_of_life"
+    ## "word_assoc"
+    ## "enron", "marker_cafe", "prosper"
 )
-## Ns <- sapply(networks, function(net) vcount(readRDS(paste0("../data/", net, ".rds"))))
-## Ms <- sapply(networks, function(net) ecount(readRDS(paste0("../data/", net, ".rds"))))
+Ns <- sapply(networks, function(net) vcount(readRDS(paste0("../data/", net, ".rds"))))
+Ms <- sapply(networks, function(net) ecount(readRDS(paste0("../data/", net, ".rds"))))
 
-## rfdf <- data.frame(network = networks, N = Ns, M = Ms)
+rfdf <- data.frame(network = networks, N = Ns, M = Ms)
 
 for(network in networks) {
-    ## network <- "spanish"
-    dynamics <- "doublewell"
+    network <- "drosophila"
+    dynamics <- c("doublewell", "mutualistic", "SIS", "genereg")
     vsfile <- paste0("../data/nodefeatures-", network, ".rds")
-    nsfile <- paste0("../data/ns-", network, "_", dynamics, ".rds")
+    nsfiles <- paste0("../data/ns-", network, "_", dynamics, ".rds")
 
-    vs <- readRDS(vsfile)
-    ns <- readRDS(nsfile)
-
-    count <- as.data.frame(table(as.numeric(get_vs(ns$opt))))
-
-    df <- merge(vs, count, by.x = "v", by.y = "Var1", all.x = TRUE)
-    df$Freq[is.na(df$Freq)] <- 0
-    df$Freq <- factor(df$Freq, ordered = TRUE)
-    df$Sel <- as.numeric(df$Freq > 0)
-    df$Sel <- factor(df$Sel)
-
-    tm <- system.time(
-        rf.Sel <- randomForest(
-            Sel ~ k + knn + lcl + cc + bc + kcore,  data = df, importance = TRUE, proximity = TRUE
-        )
+    vs <- readRDS(vsfile) # vertices
+    ## ns <- readRDS(nsfile) # node sets
+    ## ns <- do.call(c, lapply(nsfiles, function(nsfile) readRDS(nsfile)$opt))
+    ns <- do.call(
+        rbind,
+        lapply(dynamics, function(dyn) {
+            opts <- readRDS(paste0("../data/ns-", network, "_", dyn, ".rds"))$opt
+            count <- as.data.frame(table(as.numeric(get_vs(opts))))
+            colnames(count)[1] <- "v"
+            count$dynamics <- dyn
+            count
+        })
     )
+
+    ## count <- as.data.frame(table(as.numeric(get_vs(ns$opt))))
+    ## count <- as.data.frame(table(as.numeric(get_vs(ns))))
+    ## colnames(count)[1] <- "v"
+    ## count$dynamics <- rep(dynamics, each = 100)
+
+    ## df <- merge(vs, count, by = "v", all.x = TRUE)
+    df <- merge(vs, ns, by = "v")
+    df$Freq[is.na(df$Freq)] <- 0
+    ## df$Sel <- as.numeric(df$Freq > 0)
+    ## df$Freq <- factor(df$Freq, ordered = TRUE)
+    ## df$Sel <- factor(df$Sel)
+
+    tm <- system.time({
+        rf <- randomForest(
+            x = df[, c("k", "knn", "lcl", "cc", "bc", "kcore", "dynamics")], y = df[, "Freq"],
+            ##Freq ~ k + knn + lcl + cc + bc + kcore,  data = df,
+            importance = TRUE, proximity = FALSE, keep.forest = FALSE
+        )
+        ## if(length(unique(df$Sel)) > 1) { # doesn't work with dolphin because all nodes selected at least once
+        ##     rf$sel <- randomForest(
+        ##         x = df[, c("k", "knn", "lcl", "cc", "bc", "kcore")], y = df[, "Sel"],
+        ##         ##Sel ~ k + knn + lcl + cc + bc + kcore,  data = df,
+        ##         importance = TRUE, proximity = FALSE, keep.forest = FALSE
+        ##     )
+        ## } else {
+        ##     rf$sel <- NULL
+        ## }
+    })
+
+    rf <- rfPoisson(
+        x = df[, c("k", "knn", "lcl", "cc", "bc", "kcore", "dynamics")], y = df[, "Freq"],
+        importance = TRUE, proximity = FALSE, keep.forest = FALSE
+    )
+    
+        
 
     saveRDS(rf.Sel, paste0("../data/randomforest-", network, ".rds"))
     
@@ -68,21 +101,21 @@ for(network in networks) {
 ## Recall: TP/(TP + FN)
 ## F1 = (2TP)/(2TP + FP + FN)
 
-                                        # Only concerned with non-zero
-## show(rf.Sel$err.rate[nrow(rf.Sel$err.rate), "OOB"])
+show(rf$freq$confusion)
+show(rf$freq$err.rate[nrow(rf$freq$err.rate), "OOB"])
 
-## cat(
-##     "Network: ", network, ", RF run time: ", tm[3], "\n\n", sep = ""
-## )
+cat(
+    "Network: ", network, ", RF run time: ", tm[3], "\n\n", sep = ""
+)
 
-## with(list(m = rf.Sel$confusion), {
-##                                         # All based on out-of-bag error...
-##     TP <- m["1", "1"] # we selected "1" (column) and it was actually "1" (row)
-##     FP <- m["0", "1"] # we selected "1" (column) and it was actually "0" (row)
-##     FN <- m["1", "0"] # we selected "0" (column) and it was actually "1" (row)
-##     cat("Precision:", TP/(TP + FP), "\n",
-##         "Recall:", TP/(TP + FN), "\n",
-##         "F1:", 2*TP/(2*TP + FP + FN), "\n")
-## })
+with(list(m = rf$freq$confusion), {
+                                        # All based on out-of-bag error...
+    TP <- m["1", "1"] # we selected "1" (column) and it was actually "1" (row)
+    FP <- m["0", "1"] # we selected "1" (column) and it was actually "0" (row)
+    FN <- m["1", "0"] # we selected "0" (column) and it was actually "1" (row)
+    cat("Precision:", TP/(TP + FP), "\n",
+        "Recall:", TP/(TP + FN), "\n",
+        "F1:", 2*TP/(2*TP + FP + FN), "\n")
+})
 
-## show(importance(rf.Sel, type = 2))
+show(importance(rf$freq, type = 2))
