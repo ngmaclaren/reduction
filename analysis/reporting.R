@@ -70,7 +70,9 @@ sort(igraph::degree(BA), decreasing = TRUE)[1:5]
                                         # optimzied node set? and same for degree preserving.
 count_smaller <- function(dynamics) {
     networks <- c(
-        "dolphin", "celegans", "proximity", "euroroad", "email", "er", "ba", "hk", "gkk", "lfr"
+        "dolphin", "celegans", "proximity", "euroroad", "email", "er", "ba", "hk", "gkk", "lfr",
+        "drosophila", "reactome", "route_views", "spanish", "foldoc", "tree_of_life", "word_assoc",
+        "enron", "marker_cafe", "prosper"        
     )
     allns <- lapply(
         networks,
@@ -81,6 +83,7 @@ count_smaller <- function(dynamics) {
     oe <- lapply(allerrors, `[[`, "opt")
     re <- lapply(allerrors, `[[`, "rand")
     fe <- lapply(allerrors, `[[`, "fixed")
+    ##print(lengths(list(oe, re, fe)))
 
     c(
         rand = sum(mapply(function(opt, rand) sum(rand < max(opt)), oe, re)),
@@ -89,7 +92,7 @@ count_smaller <- function(dynamics) {
 }
 
 dyns <- c("doublewell", "mutualistic", "genereg", "SIS")
-rowSums(sapply(dyns, count_smaller)/1000)
+1 - rowSums(sapply(dyns, count_smaller)/2000)
 
 #### Testing with DART and GBB
 res <- data.frame(

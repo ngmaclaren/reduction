@@ -1,17 +1,21 @@
-library(latex2exp)
 library(sfsmisc)
 get_error <- optNS::get_error
 
 save_plots <- TRUE # FALSE
 two_panels <- FALSE # TRUE
+large_and_model <- TRUE # FALSE
+                                        # The next three options are broken now b/c of the new file names, l.51+
 optweights <- "no" # "yes"
 use_weighted_networks <- FALSE # TRUE
 use_directed_networks <- FALSE # TRUE
 
-dynamics <- "mutualistic" # doublewell SIS genereg mutualistic
+dynamics <- "genereg" # doublewell mutualistic SIS genereg
 
 networks <- c(
-    "dolphin", "celegans", "proximity", "euroroad", "email", "er", "ba", "hk", "gkk", "lfr"
+    "dolphin", "proximity", "celegans", "euroroad", "email",
+    "drosophila", "reactome", "route_views", "spanish", "foldoc",
+    "tree_of_life", "word_assoc", "enron", "marker_cafe", "prosper",
+    "er", "ba", "hk", "gkk", "lfr"
 )
 weighted <- c(
     "windsurfers", "macaques", "train_terrorists", "highschool", "drug", "residence_hall", "netsci_weighted",
@@ -23,6 +27,7 @@ directed <- c(
 )
 if(use_weighted_networks) networks <- weighted
 if(use_directed_networks) networks <- directed
+if(large_and_model) networks <- networks[11:20] else networks <- networks[1:10]
 
 allns <- lapply(
     networks,
@@ -36,15 +41,14 @@ allns <- lapply(
 )
 allerrors <- lapply(allns, function(ns) lapply(ns, get_error))
 
-## palette("Set 1")
-## palette("Tableau 10")
-
 if(use_weighted_networks) {
     imgfile <- paste0("../img/compare-weighted-networks-", dynamics, ".pdf")
 } else if(use_directed_networks) {
     imgfile <- paste0("../img/compare-directed-networks-", dynamics, ".pdf")
+} else if(large_and_model) {
+    imgfile <- paste0("../img/compare-large_and_model-networks-", dynamics, ".pdf")
 } else {
-    imgfile <- paste0("../img/compare-networks-", dynamics,
+    imgfile <- paste0("../img/compare-small_empirical-networks-", dynamics,
                       switch(optweights, no = "", yes = "-w"),
                       ".pdf")
 }
@@ -76,17 +80,17 @@ plotit <- function(dl, panellabel = "", xlab = "", ylab = "") { # list of errors
     )
     points(
         oe, jitter(rep(ypos[1], length(oe)), amount = amnt),
-        col = adjustcolor("#3584e4", alpha), #adjustcolor(1, alpha.f = alpha),
+        col = adjustcolor("#3584e4", alpha), 
         pch = 1, cex = ptcex
     )
     points(
         fe, jitter(rep(ypos[2], length(fe)), amount = amnt),
-        col = adjustcolor("#ff7800", alpha), #adjustcolor(2, alpha.f = alpha),
+        col = adjustcolor("#ff7800", alpha), 
         pch = 2, cex = ptcex
     )
     points(
         re, jitter(rep(ypos[3], length(re)), amount = amnt),
-        col = adjustcolor("#33d17a", alpha), #adjustcolor(3, alpha.f = alpha),
+        col = adjustcolor("#33d17a", alpha), 
         pch = 0, cex = ptcex
     )
 }
@@ -130,12 +134,14 @@ if(two_panels) {
         dev.new(height = ht, width = wd)
     }
 
+    if(large_and_model) IDadj <- 10 else IDadj <- 0
+
     par(mfcol = c(length(networks)/2, 2), mar = c(2, .5, .5, .5))
     for(i in seq_along(networks)) {
         plotit(allerrors[[i]])
         box()
         eaxis(1, n.axp = 1, cex.axis = labelsize)
-        placelabel(paste0("(", letters[i], ")"), 0.01, 0.95, adj = c(0, 1), cex = labelsize)
+        placelabel(paste0("(", letters[i + IDadj], ")"), 0.01, 0.95, adj = c(0, 1), cex = labelsize)
         if(i == 1) {
             legend(
                 "topright", bty = "n", col = c("#3584e4", "#ff7800", "#33d17a"), 
