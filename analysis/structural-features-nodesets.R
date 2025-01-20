@@ -1,81 +1,127 @@
-## Add new networks
-## add k-core
-## add betweenness and closeness, though these will be slow for large networks
-networks <- c(
-    "dolphin", "proximity", "celegans", "euroroad", "email",
-    "drosophila", "reactome", "route_views", "spanish", "foldoc", "tree_of_life"
-)
-for(network in networks) {
-    g <- readRDS(paste0("../data/", network, ".rds"))
-    print(network)
-    print(system.time(closeness(g)))
-}
+## Add: average distance between nodes in a node set
+## In terms of plots, I think all we're doing is community membership (K) and average distance
 
 library(parallel)
 ncores <- detectCores()-1
 library(igraph)
+library(optNS)
 
 set.seed(123) # because of the Louvain algorithm
-
 save_plots <- FALSE # TRUE
-
 useall <- "no" # "yes"    # If no, only opt and rand
 useweights <- "no" # "yes"
 weightsflag <- switch(useweights, no = FALSE, yes = TRUE)
+networks <- c(
+    "dolphin", "proximity", "celegans", "euroroad", "email",
+    "drosophila", "reactome", "route_views", "spanish", "foldoc",
+    "tree_of_life", "word_assoc", "enron", "marker_cafe", "prosper",
+    "er", "ba", "hk", "gkk", "lfr"
+)
 
-get_from_ns <- function(row, ref, varname, collection) {
-    network <- row[1]
-    dynamic <- row[2]
-    ns.type <- row[3]
-    nslist <- paste(c(network, dynamic), collapse = "_")
+## If all cols in a df are the same class, apply()'s working object is a named vector of that class
 
-    ns <- collection[[nslist]][[ns.type]]
-    ref <- ref[[network]]
-
-    var <- sapply(ns, function(x) mean(ref[x$vs], na.rm = TRUE))
-    df <- data.frame(network = network, dynamics = dynamic, ns.type = ns.type, var = var,
-                     row.names = NULL)
-    colnames(df)[4] <- varname
-    return(df)
+get_nss <- function(net, dyn, ns.type) {
+    nsname <- paste(net, dyn, sep = "_")
+    nodesets[[nsname]][[ns.type]]
 }
 
+get_average_nodefeatures <- function(net, dyn, ns.type) {
+    nss <- get_nss(net, dyn, ns.type) # the 100 node sets to work with
+    nf <- nodefeatures[[net]]
+    t(sapply(nss, function(ns) colMeans(nf[nf$v %in% ns$vs, -which(colnames(nf) == "v")])))
+}
+
+                                        # helper function
 max_fromsame <- function(ns, part) {
     mbr <- part[ns$vs]
     max(table(mbr))
 }
 
-get_pairs_scores <- function(row, collection, partitions) {
-    network <- row[1]
-    dynamics <- row[2]
-    ns.type <- row[3]
-    nslist <- paste(c(network, dynamics), collapse = "_")
-    partition <- partitions[[network]]
-
-    ns <- collection[[nslist]][[ns.type]]
-
-    var <- sapply(ns, max_fromsame, partition)
-    data.frame(network = network, dynamics = dynamics, ns.type = ns.type, pairs = var, row.names = NULL)
+                                        # max number of nodes coming from the same community
+get_pairs_scores <- function(net, dyn, ns.type) {
+    nss <- get_nss(net, dyn, ns.type)
+    mbr <- memberships[[net]]
+    sapply(nss, max_fromsame, mbr)
 }
 
+                                        # average shortest path distance between nodes in a node set
+get_avg_geods <- function(net, dyn, ns.type) { 
+    vs <- t(get_vs(get_nss(net, dyn, ns.type)))
+    apply(vs, 1, function(v) {
+        geod <- distances(graphlist[[net]], v, v)
+        mean(geod[lower.tri(geod)])
+    })
+}
 
-networks <- c( # try all networks
-    "dolphin", "proximity", "celegans", "euroroad", "email", "er", "ba", "hk", "gkk", "lfr"
-)
 graphlist <- lapply(networks, function(network) readRDS(paste0("../data/", network, ".rds")))
+## fullstates <- lapply(networks, function(network) readRDS(paste0("../data/fullstate-", network, ".rds")))
+nodefeatures <- lapply(networks, function(network) {
+    nf <- read.csv(paste0("../data/nodefeatures-", network, ".csv"))
+    cols <- c("v", "k", "cc", "bc", "knn", "lcl", "kcore")
+    subset(nf, dynamics == "doublewell", select = cols)
+})
+names(graphlist) <- names(nodefeatures) <- networks # <- names(fullstates) 
+
 dynamics <- c("doublewell", "SIS", "mutualistic", "genereg")
+
 ns.types <- c("opt", "fixed", "rand", "constr", "quant", "knnconstr", "comm")
 ns.types <- ns.types[switch(useall, no = c(1, 3), yes = 1:length(ns.types))]
-conds <- expand.grid(networks, dynamics, ns.types, stringsAsFactors = FALSE)
-colnames(conds) <- c("networks", "dynamics", "ns.type")
-nslistnames <- apply(conds[, 1:2], 1, paste, collapse = "_")
 
-fullstates <- lapply(networks, function(network) readRDS(paste0("../data/fullstate-", network, ".rds")))
-names(fullstates) <- networks
+conds <- expand.grid(networks, dynamics, ns.types, stringsAsFactors = FALSE)
+colnames(conds) <- c("net", "dyn", "ns.type")
+nslistnames <- apply(conds[, 1:2], 1, paste, collapse = "_")
 nodesets <- lapply(nslistnames, function(cond) {
     readRDS(paste0("../data/ns-", cond, switch(useweights, no = ".rds", yes = "_w.rds")))
 }) # _w if useweights
 names(nodesets) <- nslistnames
 
+                                        # CHANGING VARIABLE NAMES
+system.time(partitions <- lapply(graphlist, cluster_louvain)) # 37.840
+memberships <- lapply(partitions, membership)
+modularities <- sapply(partitions, modularity)
+names(partitions) <- names(memberships) <- names(modularities) <- networks
+
+## Separately, need to collect all of the node data from the nodefeatures csvs and get ready for the model
+## k, bc, cc, knn, lcl, kcore; then community membership and average shortest path distance
+df <- apply(conds, 1, function(row) {
+    net <- row["net"]
+    dyn <- row["dyn"]
+    ns.type <- row["ns.type"]
+    nfs <- get_average_nodefeatures(net, dyn, ns.type)
+    pairs <- get_pairs_scores(net, dyn, ns.type)
+    geods <- get_avg_geods(net, dyn, ns.type)
+    data.frame(
+        network = net, dynamics = dyn, ns.type = ns.type, nfs, pairs = pairs, geods = geods
+    )
+})
+
+## df is going to start with conds, then add the mean features for each 
+## Use the histogram (more continuous) plot function below for avg shortest path distance
+## Then use the more_discrete function for community membership
+##
+
+
+with(
+    list(
+        x = get_avg_geods("dolphin", "doublewell", "rand"),
+        y = get_avg_geods("dolphin", "doublewell", "opt")
+    ), {
+        ## plot(x, y)
+        hist.all <- hist(c(x, y), plot = FALSE)
+        hist.x <- hist(x, breaks = hist.all$breaks, plot = FALSE)
+        hist.y <- hist(y, breaks = hist.all$breaks, plot = FALSE)
+        ylim <- range(c(hist.x$counts, hist.y$counts))
+        plot(hist.x, col = adjustcolor(1, .5), ylim = ylim, xlab = "Average distance", main = "")
+        plot(hist.y, col = adjustcolor(2, .5), ylim = ylim, add = TRUE)
+    }
+)
+
+
+
+
+
+
+## 2025-01-07: I don't want to do these anymore. I want to load the csvs and get from there. 
 ks <- lapply(graphlist, degree)
 knns <- lapply(graphlist, function(g) knn(g)$knn)
 lcls <- lapply(graphlist, transitivity, type = "localundirected")
@@ -96,7 +142,7 @@ df$network <- factor(df$network, levels = networks)
 df$dynamics <- factor(df$dynamics, levels = dynamics)
 df$ns.type <- factor(df$ns.type, levels = c("rand", "opt", "fixed", "constr", "quant", "knnconstr", "comm"))
 
-#### NEW MODEL
+#### NEW MODEL # 2025-01-07: keeping the model, only plotting community and distance
 moo <- glm(# I don't know why I came up with this name. 
     ns.type ~ dynamics + network + k + knn + lcl + pairs,
     family = binomial,
