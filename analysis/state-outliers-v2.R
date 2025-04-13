@@ -2,7 +2,7 @@ library(igraph)
 library(optNS)
 library(sfsmisc)
 
-save_plots <- TRUE # FALSE
+save_plots <- FALSE # TRUE
 
 get_zs <- function(vs, fs, dispersion = c("mad", "sd"), center = c("mean", "median")) { 
     dispersion <- get(dispersion)
@@ -163,7 +163,7 @@ test <- subset(res, dyn == "doublewell")
 
 res <- as.data.frame(t(sapply(nets, function(net) {
     ## net <- "ba"
-    dyn <- "genereg"
+    dyn <- "doublewell" # genereg
     ## theta <- qnorm(0.975)
     ell <- 100 # the index on Ds
     fs <- readRDS(paste0("../data/fullstate-", net, ".rds"))[[dyn]]

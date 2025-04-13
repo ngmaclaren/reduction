@@ -2,14 +2,14 @@ library(sfsmisc)
 get_error <- optNS::get_error
 
 save_plots <- TRUE # FALSE
-two_panels <- FALSE # TRUE
-large_and_model <- TRUE # FALSE
+two_panels <- TRUE # FALSE
+large_and_model <- FALSE # TRUE
                                         # The next three options are broken now b/c of the new file names, l.51+
 optweights <- "no" # "yes"
 use_weighted_networks <- FALSE # TRUE
 use_directed_networks <- FALSE # TRUE
 
-dynamics <- "genereg" # doublewell mutualistic SIS genereg
+dynamics <- "doublewell" # doublewell mutualistic SIS genereg
 
 networks <- c(
     "dolphin", "proximity", "celegans", "euroroad", "email",
@@ -28,6 +28,7 @@ directed <- c(
 if(use_weighted_networks) networks <- weighted
 if(use_directed_networks) networks <- directed
 if(large_and_model) networks <- networks[11:20] else networks <- networks[1:10]
+if(two_panels) networks <- c("dolphin", "ba")
 
 allns <- lapply(
     networks,
@@ -101,19 +102,19 @@ if(two_panels) {
     wd <- 8
 
     if(save_plots) {
-        pdf("../img/compare-networks-MT.pdf", height = ht, width = wd)
+        pdf("../img/compare-networks-MT-v2.pdf", height = ht, width = wd)
     } else {
         dev.new(height = ht, width = wd)
     }
 
     par(mfcol = c(2, 1), mar = c(4, 16, 0.5, 0.5))
-    nets <- c("dolphin", "ba")
+    ## nets <- c("dolphin", "ba")
     yticks <- list(
         labels = c("Optimized", "Degree-preserving random", "Completely random"),
         pos = 1 + c(.25, 0, -.25)
     )
 
-    for(i in seq_along(nets)) {
+    for(i in seq_along(networks)) {
         plotit(allerrors[[i]])
         box()
         eaxis(1, n.axp = 1, cex.axis = labelsize)
@@ -136,7 +137,7 @@ if(two_panels) {
 
     if(large_and_model) IDadj <- 10 else IDadj <- 0
 
-    par(mfcol = c(length(networks)/2, 2), mar = c(2, .5, .5, .5))
+    par(mfcol = c(length(networks)/2, 2), mar = c(2, 1.25, .5, 1.25))
     for(i in seq_along(networks)) {
         plotit(allerrors[[i]])
         box()

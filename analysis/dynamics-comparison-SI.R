@@ -18,7 +18,7 @@ comps <- list() # this will be where we store the comparison results
 for(network in networks) {
     ## network <- "tree_of_life"
 
-    comps[[network]] <- list
+    comps[[network]] <- list()
 
     imgfile <- paste0(loc, network, ".pdf")
 

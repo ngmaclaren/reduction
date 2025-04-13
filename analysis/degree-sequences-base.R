@@ -1,7 +1,7 @@
 library(igraph)
 library(optNS)
 
-save_plots <- TRUE # FALSE
+save_plots <- FALSE # TRUE
 
 get_plims <- function(dims) {
     ## want to divide the unit square into pieces based on dim

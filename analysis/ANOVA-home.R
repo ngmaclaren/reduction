@@ -1,5 +1,5 @@
 use_weighted_networks <- FALSE # TRUE
-use_directed_networks <- TRUE # FALSE
+use_directed_networks <- FALSE # TRUE
 exclude_heuristic <- TRUE # FALSE
 
 networks <- c(

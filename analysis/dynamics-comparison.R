@@ -2,9 +2,9 @@ library(sfsmisc)
 library(optNS)
 library(igraph)
 
-save_plots <- FALSE # TRUE
+save_plots <- TRUE # FALSE
 
-imgfile <- "../img/dynamics-comparison.pdf"
+imgfile <- "../img/dynamics-comparison-v2.pdf"
 
 Ylist <- readRDS("../data/fullstate-dolphin.rds") # still fixing dolphin network
 
@@ -113,11 +113,16 @@ for(pltno in seq(16)) {
 
 if(save_plots) dev.off()
 
-library(latex2exp)
+## library(latex2exp)
 ns <- readRDS("../data/ns-dolphin_doublewell.rds")$opt # SIS
 S <- ns[[which.min(get_error(ns))]]
 g <- readRDS("../data/dolphin.rds")
-print(V(g)$name[S$vs])
+## print(V(g)$name[S$vs])
+print(S$vs)
+## V(g)$color <- NA # V(g)[degree(g) == 11]$color <- 3
+## V(g)[S$vs]$color <- 1
+## dev.new(height = 10, width = 10)
+## plot(g, vertex.size = 8)
 
 
 Ds <- sdn::.doublewell$Ds
@@ -125,36 +130,42 @@ ht2 <- 5
 wd2 <- 5
 ls2 <- 2
 
+xicolor <- "#c0bfbc"
+vscolor <- "#3584e4"
+appcolor <- "#9141ac"
+
                                         # on SIS
 if(save_plots) {
-    pdf("../img/dynamics-comparison-SISbifplot.pdf", height = ht2, width = wd2)
+    pdf("../img/dynamics-comparison-SISbifplot-v2.pdf", height = ht2, width = wd2)
 } else {
     dev.new(height = ht2, width = wd2)
 }
 par(mar = c(5, 5, 1, 1))
 matplot(
-    Ds, Ylist$SIS, type = "l", lty = 1, lwd = 0.5, col = "#babdb6", ylim = c(0, 1),
-    xlab = TeX(r"(D)", italic = TRUE), ylab = TeX(r"($x^*$)", italic = TRUE),
+    Ds, Ylist$SIS, type = "l", lty = 1, lwd = 0.5, col = xicolor, ylim = c(0, 1),
+    ## xlab = TeX(r"(D)", italic = TRUE), ylab = TeX(r"($x^*$)", italic = TRUE),
+    xlab = "D", ylab = "x*",
     font.lab = 3, cex.lab = ls2, cex.axis = ls2
 )
 lines(Ds, rowMeans(Ylist$SIS), lty = 1, lwd = 6, col = "#000000")
-matlines(Ds, Ylist$SIS[, S$vs], lty = 1, lwd = 4, col = "#9141ac")
-lines(Ds, rowMeans(Ylist$SIS[, S$vs]), lty = 1, lwd = 8, col = "#e01b24")
+matlines(Ds, Ylist$SIS[, S$vs], lty = 1, lwd = 4, col = vscolor)
+lines(Ds, rowMeans(Ylist$SIS[, S$vs]), lty = 1, lwd = 8, col = appcolor)
 if(save_plots) dev.off()
 
                                         # on Double-well
 if(save_plots) {
-    pdf("../img/dynamics-comparison-doublewellbifplot.pdf", height = ht2, width = wd2)
+    pdf("../img/dynamics-comparison-doublewellbifplot-v2.pdf", height = ht2, width = wd2)
 } else {
     dev.new(height = ht2, width = wd2)
 }
 par(mar = c(5, 5, 1, 1))
 matplot(
-    Ds, Ylist$doublewell, type = "l", lty = 1, lwd = 0.5, col = "#babdb6",
-    xlab = TeX(r"(D)", italic = TRUE), ylab = TeX(r"($x^*$)", italic = TRUE),
+    Ds, Ylist$doublewell, type = "l", lty = 1, lwd = 0.5, col = xicolor,
+    ## xlab = TeX(r"(D)", italic = TRUE), ylab = TeX(r"($x^*$)", italic = TRUE),
+    xlab = "D", ylab = "x*",
     font.lab = 3, cex.lab = ls2, cex.axis = ls2
 )
 lines(Ds, rowMeans(Ylist$doublewell), lty = 1, lwd = 6, col = "#000000")
-matlines(Ds, Ylist$doublewell[, S$vs], lty = 1, lwd = 4, col = "#9141ac")
-lines(Ds, rowMeans(Ylist$doublewell[, S$vs]), lty = 1, lwd = 8, col = "#e01b24")
+matlines(Ds, Ylist$doublewell[, S$vs], lty = 1, lwd = 4, col = vscolor)
+lines(Ds, rowMeans(Ylist$doublewell[, S$vs]), lty = 1, lwd = 8, col = appcolor)
 if(save_plots) dev.off()
