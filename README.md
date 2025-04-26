@@ -124,3 +124,7 @@ points(error$opt, jitter(rep(2, length(error$opt)), amount = 0.1), pch = 1, col 
 points(error$rand, jitter(rep(1, length(error$rand)), amount = 0.1), pch = 0, col = 1)
 axis(2, at = c(2, 1), tick = FALSE, labels = c("Optimized", "Random"), las = 2)
 ```
+
+## Sentinel node analysis in empirical data
+
+We used functional magnetic resonance imaging (fMRI) data from the [Human Connectome Project](https://www.humanconnectome.org/) to investigate the performance of our method in an empirical setting. We used the HCP Young Adult data set, described [here](https://www.humanconnectome.org/study/hcp-young-adult). Registration is required to access this data, so we have not included it here. We are including the files we used to analyze the data: analyze-fMRI.R/.sh and add-degree-preserving.R/.sh were used to find the sentinel node sets and the basic figure was created with plot-fmri.R. The processed data files are datalist-large.rds, datalist-large-dp.rds, and check5.rds.
