@@ -39,54 +39,52 @@ make_nodesets <- function(datafile, use.A2 = FALSE) {
     threshold <- mu + 5*sigma # 4
     test <- any(abs(avgxi) >= threshold) # colMeans(X.train)
     if(isFALSE(test)) flag <- "use" else flag <- "dontuse"
+                                        # uncomment here to return only flag
+                                        # (e.g., creating check5.rds
     ##return(flag)
 ##}
-    if(use.A2) {
-        A <- readRDS("A2.rds")[[pos]]
-    } else {
-        Cmat <- cor(X.train, method = "pearson")
-        A <- Cmat
-    }
+    A <- readRDS("A2.rds")[[pos]]
+    Cmat <- cor(X.train, method = "pearson")
+    A <- Cmat
     A[which(A < 0, arr.ind = TRUE)] <- 0
-    if(use.A2) A <- A/max(A)
 
     g <- graph_from_adjacency_matrix(A, "undirected", weighted = TRUE, diag = FALSE)
-    return(g)
+                                        # uncomment here to return the networks
+##     return(g)
+## }
+
+    N <- vcount(g)
+    n <- floor(log(N))
+
+    times <- 0:15
+    control <- list(times = times, ncores = ncores)
+    params <- c(.doublewell, list(A = A))
+    params$use.matrix <- TRUE
+    Ds <- seq(0, 1, length.out = 100)
+    Y <- solve_in_range(Ds, "D", doublewell, rep(params$xinit.low, N), params, control, "ode")
+    y <- rowMeans(Y)
+
+    opts <- make_dataset(
+        ntrials = 100, ns.type = "opt", ncores = ncores, n = n, g = g, y = y, Y = Y
+    )
+    rands <- make_dataset(
+        ntrials = 100, ns.type = "rand", ncores = ncores, n = n, g = g, y = y, Y = Y
+    )
+    testerror <- list(
+        opt = sapply(opts, function(ns) obj_fn(ns$vs, rowMeans(X.test), X.test)),
+        rand = sapply(rands, function(ns) obj_fn(ns$vs, rowMeans(X.test), X.test))
+    )
+    ## t.test(testerror$opt, testerror$rand, "less")
+    
+    return(list(network = g, opts = opts, rands = rands, testerror = testerror))
 }
 
 
-##     N <- vcount(g)
-##     n <- floor(log(N))
-
-##     times <- 0:15
-##     control <- list(times = times, ncores = ncores)
-##     params <- c(.doublewell, list(A = A))
-##     params$use.matrix <- TRUE
-##     Ds <- seq(0, 1, length.out = 100)
-##     Y <- solve_in_range(Ds, "D", doublewell, rep(params$xinit.low, N), params, control, "ode")
-##     y <- rowMeans(Y)
-
-##     opts <- make_dataset(
-##         ntrials = 100, ns.type = "opt", ncores = ncores, n = n, g = g, y = y, Y = Y
-##     )
-##     rands <- make_dataset(
-##         ntrials = 100, ns.type = "rand", ncores = ncores, n = n, g = g, y = y, Y = Y
-##     )
-##     testerror <- list(
-##         opt = sapply(opts, function(ns) obj_fn(ns$vs, rowMeans(X.test), X.test)),
-##         rand = sapply(rands, function(ns) obj_fn(ns$vs, rowMeans(X.test), X.test))
-##     )
-##     t.test(testerror$opt, testerror$rand, "less")
-    
-##     return(list(network = g, opts = opts, rands = rands, testerror = testerror, flag = flag))
-## }
-
-
-## datalist <- lapply(datafiles, make_nodesets)
-## saveRDS(datalist, "datalist-large.rds")
+datalist <- lapply(datafiles, make_nodesets)
+saveRDS(datalist, "datalist-large.rds")
 
 ## check <- unlist(mclapply(datafiles, make_nodesets, mc.cores = ncores))
 ## saveRDS(check, "check5.rds")
 
-graphlist <- lapply(datafiles, make_nodesets)
-saveRDS(graphlist, "graphlist-large.rds")
+## graphlist <- lapply(datafiles, make_nodesets)
+## saveRDS(graphlist, "graphlist-large.rds")
